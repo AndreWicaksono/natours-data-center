@@ -2,9 +2,13 @@ import styled from "styled-components";
 
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { UserIcon } from "@heroicons/react/24/solid";
+import { useNavigate } from "@tanstack/react-router";
 
 import Menus from "src/components/Molecules/Menus";
 import ProfilePicture from "src/components/Molecules/ProfilePicture";
+
+import { cookieKey } from "src/Global/Constants";
+import useClientCookie from "src/hooks/useClientCookie";
 
 const StyledHeader = styled.header`
   background-color: var(--color-grey-0);
@@ -19,6 +23,9 @@ const StyledHeader = styled.header`
 `;
 
 function Header() {
+  const { deleteCookie } = useClientCookie();
+  const navigate = useNavigate();
+
   return (
     <StyledHeader>
       <Menus>
@@ -39,7 +46,12 @@ function Header() {
 
               <Menus.Button
                 icon={<ArrowRightOnRectangleIcon height={16} width={16} />}
-                onClick={() => null}
+                onClick={(e) => {
+                  e.preventDefault();
+
+                  deleteCookie({ cookieKey, path: "/" });
+                  navigate({ replace: true, to: "/login" });
+                }}
                 disabled={false}
               >
                 <span>Log out</span>
