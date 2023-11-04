@@ -7,7 +7,8 @@ import TableRow, {
   LabelDiscount,
   LabelPrice,
 } from "src/components/Organisms/Table/TableRow";
-import { LayoutRow } from "src/global.css";
+
+import { LayoutRow } from "src/Global/Styles.css";
 
 function TableTours() {
   return (

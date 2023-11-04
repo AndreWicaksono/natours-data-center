@@ -3,10 +3,14 @@ import { Outlet, RootRoute } from "@tanstack/react-router";
 
 import App from "src/App";
 
+import { Toast } from "src/components/Molecules/Toast";
+
 export const route = new RootRoute({
   component: () => (
     <App>
       <Outlet />
+
+      <Toast />
     </App>
   ),
 });
