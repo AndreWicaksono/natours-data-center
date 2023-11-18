@@ -62,6 +62,14 @@ const Button = styled.button`
   }
 `;
 
+export const ContainerModalContentOverflowYScroll = styled.div<{
+  $height: number;
+}>`
+  height: ${({ $height }) => $height}vh;
+
+  overflow-y: scroll;
+`;
+
 type TypeModalContext = {
   open: Dispatch<SetStateAction<string>> | null;
   openName: string | null;
@@ -96,13 +104,13 @@ const Modal: FC<{ children: ReactNode }> & {
   );
 };
 
-type TypeOnCloseModal = () => void;
+export type Trigger_CloseModal = () => void;
 type TypeArgChildren =
   | DetailedReactHTMLElement<React.HTMLAttributes<HTMLElement>, HTMLElement>
   | ReactElement;
 type TypeArgChildrenOfWindow =
   | DetailedReactHTMLElement<
-      React.HTMLAttributes<HTMLElement> & { onCloseModal: TypeOnCloseModal },
+      React.HTMLAttributes<HTMLElement> & { closeModal: Trigger_CloseModal },
       HTMLElement
     >
   | ReactElement;
@@ -140,7 +148,9 @@ const Window = ({
           <XMarkIcon />
         </Button>
 
-        <div>{cloneElement(children, { ...children.props })}</div>
+        {cloneElement(children as TypeArgChildrenOfWindow, {
+          closeModal: close,
+        })}
       </StyledModal>
     </Overlay>,
     document.body

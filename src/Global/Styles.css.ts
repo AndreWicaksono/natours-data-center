@@ -193,26 +193,34 @@ img {
 
 `;
 
-export const LayoutRow = styled.div<{ type?: "horizontal" | "vertical" }>`
+export const LayoutRow = styled.div<{
+  $flex?: { alignItems?: string; justifyContent?: string };
+  $type?: "horizontal" | "vertical";
+}>`
   display: flex;
 
   ${(props) =>
-    props.type === "horizontal" &&
+    props.$type === "horizontal" &&
     css`
-      justify-content: space-between;
       align-items: center;
+      justify-content: ${props.$flex?.justifyContent
+        ? props.$flex.justifyContent
+        : "space-between"};
     `}
 
   ${(props) =>
-    props.type === "vertical" &&
+    props.$type === "vertical" &&
     css`
+      align-items: ${props.$flex?.alignItems
+        ? props.$flex.alignItems
+        : "stretch"};
       flex-direction: column;
       gap: 1.6rem;
     `}
 `;
 
 LayoutRow.defaultProps = {
-  type: "vertical",
+  $type: "vertical",
 };
 
 export default CSSGlobal;
