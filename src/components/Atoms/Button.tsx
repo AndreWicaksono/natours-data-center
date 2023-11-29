@@ -58,6 +58,12 @@ const variations: {
 };
 
 type StyledProps_Button = {
+  $flex?: {
+    display?: "flex" | "inline-flex";
+    alignItems?: string;
+    gap?: string;
+    justifyContent?: string;
+  };
   $size?: "small" | "medium" | "large";
   $variation?: "primary" | "secondary" | "danger";
 };
@@ -75,9 +81,28 @@ const Button: FC<
   ${(props) => (props.$size ? sizes[props.$size] : sizes.medium)}
   ${(props) =>
     props.$variation ? variations[props.$variation] : variations.primary}
+
+  ${({ $flex }) => {
+    if ($flex?.alignItems || $flex?.justifyContent)
+      return css`
+        display: ${$flex.display ? $flex.display : "flex"};
+        align-items: ${$flex.alignItems ? $flex.alignItems : "flex-start"};
+        gap: ${$flex.gap ? $flex.gap : 0};
+        justify-content: ${$flex.justifyContent
+          ? $flex.justifyContent
+          : "flex-start"};
+      `;
+  }}
+
+  &:disabled {
+    background-color: var(--color-grey-300);
+  }
 `;
 
 Button.defaultProps = {
+  $flex: {
+    display: "flex",
+  },
   $size: "medium",
   $variation: "primary",
 };
