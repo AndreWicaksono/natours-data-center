@@ -3,7 +3,7 @@ import { FileRoute, Navigate } from "@tanstack/react-router";
 import { FullPage } from "src/components/Templates/ProtectedRoute";
 import Spinner from "src/components/Atoms/Spinner";
 
-import TemplatePageLogin from "src/components/Templates/TemplatePageLogin";
+import TemplatePageLogin from "src/components/Templates/routes/login";
 
 import { useVerifyAuth } from "src/hooks/useVerifyAuth";
 

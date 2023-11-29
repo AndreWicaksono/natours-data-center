@@ -1,8 +1,21 @@
 import styled from "styled-components";
 
+export const ImgContainer = styled.div`
+  position: relative;
+
+  display: inline-block;
+  flex: 0 0 24rem;
+
+  img {
+    max-width: unset;
+  }
+`;
+
 const FileInput = styled.input.attrs({ type: "file" })`
-  font-size: 1.4rem;
   border-radius: var(--border-radius-sm);
+  color: transparent;
+  font-size: 1.4rem;
+  overflow: hidden;
 
   &::file-selector-button {
     font: inherit;

@@ -27,8 +27,11 @@
 
     /* dayjs */
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+
+    /* Vite.js */
+    "types": ["vite/client"]
   },
-  "include": ["src"],
+  "include": ["src", "codegen.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -27,7 +27,7 @@ const ProtectedRoute: FC<{ children: ReactNode }> = ({ children }) => {
   const cookieAuth = getCookie(cookieKey) ?? "";
 
   if (!cookieAuth) {
-    queryClient.removeQueries({ queryKey: ["auth"] });
+    queryClient.clear();
 
     return <Navigate replace to="/login" />;
   }

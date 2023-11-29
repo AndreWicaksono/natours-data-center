@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC } from "react";
 
 import styled, { css } from "styled-components";
 
@@ -37,29 +37,20 @@ const ButtonSelect = styled.button<{ $isActive: boolean }>`
 `;
 
 const ButtonSelection: FC<{
-  defaultSelectedOption: string;
-  onSelect?: (value: string) => void;
+  onSelect: (value: string) => void;
   options: Array<{ label: string; value: string }>;
-}> = ({ defaultSelectedOption = "", onSelect, options }) => {
-  const [selectedOption, setSelectedOption] = useState<string>(
-    defaultSelectedOption
-  );
-
+  value: "all" | "draft" | "published";
+}> = ({ onSelect, options, value }) => {
   return (
     <Container>
       {options.map((option) => (
         <ButtonSelect
           key={option.value}
-          $isActive={
-            option.value === selectedOption ||
-            (!selectedOption && option.value === defaultSelectedOption)
-          }
+          $isActive={option.value === value}
           onClick={() => {
-            setSelectedOption(option.value);
-
-            if (onSelect) onSelect(option.value);
+            onSelect(option.value);
           }}
-          disabled={option.value === selectedOption}
+          disabled={option.value === value}
         >
           {option.label}
         </ButtonSelect>

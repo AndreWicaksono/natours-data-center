@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { verifyAuthToken } from "src/API/REST/GET/VerifyAuthToken";
 import { cookieKey } from "src/Global/Constants";
@@ -13,7 +13,6 @@ export const useVerifyAuth = (): {
   isLoading: boolean;
 } => {
   const { getCookie } = useClientCookie();
-  const queryClient = useQueryClient();
 
   const cookieAuth = getCookie(cookieKey) ?? "";
 
@@ -23,8 +22,6 @@ export const useVerifyAuth = (): {
     gcTime: 0,
     queryFn: () => {
       if (!cookieAuth) {
-        queryClient.invalidateQueries({ queryKey: ["auth"] });
-
         throw "Cookie is not available";
       }
 
