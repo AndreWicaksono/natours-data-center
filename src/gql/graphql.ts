@@ -138,6 +138,7 @@ export type Mutation = {
   /** Adds one or more `users` records to the collection */
   insertIntousersCollection?: Maybe<UsersInsertResponse>;
   is_staff?: Maybe<Scalars['Boolean']['output']>;
+  staff_verification?: Maybe<Scalars['Boolean']['output']>;
   staff_verification_with_raise_message?: Maybe<Scalars['Boolean']['output']>;
   /** Updates zero or more records in the `staffs` collection */
   updatestaffsCollection: StaffsUpdateResponse;
@@ -189,6 +190,13 @@ export type MutationInsertIntousersCollectionArgs = {
 
 /** The root type for creating and mutating data */
 export type MutationIs_StaffArgs = {
+  uuid?: InputMaybe<Scalars['UUID']['input']>;
+};
+
+
+/** The root type for creating and mutating data */
+export type MutationStaff_VerificationArgs = {
+  permission_denied_message?: InputMaybe<Scalars['String']['input']>;
   uuid?: InputMaybe<Scalars['UUID']['input']>;
 };
 
