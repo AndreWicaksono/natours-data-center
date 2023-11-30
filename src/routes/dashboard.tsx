@@ -1,7 +1,12 @@
-import { FileRoute } from "@tanstack/react-router";
+import { FileRoute, lazyRouteComponent } from "@tanstack/react-router";
+
+import { mockToursSalesData } from "src/components/Molecules/ComposedAsFeatures/Charts/mockData";
+
+// eslint-disable-next-line react-refresh/only-export-components
+const ChartSales = lazyRouteComponent(
+  () => import("src/components/Molecules/ComposedAsFeatures/Charts/ChartSales")
+);
 
 export const route = new FileRoute("/dashboard").createRoute({
-  component: () => {
-    return <h3>Home</h3>;
-  },
+  component: () => <ChartSales data={mockToursSalesData} />,
 });
