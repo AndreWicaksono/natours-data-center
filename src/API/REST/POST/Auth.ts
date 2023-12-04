@@ -1,13 +1,13 @@
-export interface Login_Response_ObjectType {
+export interface Login_Response_Object {
   access_token: string;
   token_type: string;
   expires_in: number;
   expires_at: number;
   refresh_token: string;
-  user: User_ObjectType;
+  user: User_Object;
 }
 
-export interface User_ObjectType {
+export interface User_Object {
   id: string;
   aud: string;
   role: string;
@@ -16,42 +16,42 @@ export interface User_ObjectType {
   phone: string;
   confirmed_at: string;
   last_sign_in_at: string;
-  app_metadata: Login_AppMetadata_ObjectType;
-  user_metadata: UserMetadata_ObjectType;
-  identities: Identity_ObjectType[];
+  app_metadata: Login_AppMetadata_Object;
+  user_metadata: UserMetadata_Object;
+  identities: Identity_Object[];
   created_at: string;
   updated_at: string;
 }
 
-export interface Login_AppMetadata_ObjectType {
+export interface Login_AppMetadata_Object {
   provider: string;
   providers: string[];
 }
 
-export interface UserMetadata_ObjectType {}
+export interface UserMetadata_Object {}
 
-export interface Identity_ObjectType {
+export interface Identity_Object {
   id: string;
   user_id: string;
-  identity_data: IdentityData_ObjectType;
+  identity_data: IdentityData_Object;
   provider: string;
   last_sign_in_at: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface IdentityData_ObjectType {
+export interface IdentityData_Object {
   email: string;
   sub: string;
 }
 
-export const login = async ({
+export const requestLogin = async ({
   email,
   password,
 }: {
   email: string;
   password: string;
-}): Promise<Login_Response_ObjectType> => {
+}): Promise<Login_Response_Object> => {
   try {
     const response = await fetch(
       `${import.meta.env.VITE_URL_SERVER}/auth/v1/token?grant_type=password`,
@@ -74,4 +74,20 @@ export const login = async ({
   } catch (error) {
     throw Error(error as string);
   }
+};
+
+export const requestLogout = async (token: string): Promise<number> => {
+  const response = await fetch(
+    `${import.meta.env.VITE_URL_SERVER}/auth/v1/logout`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        apiKey: import.meta.env.VITE_KEY_PUBLIC,
+        Authorization: `Bearer ${token}`,
+      },
+      method: "POST",
+    }
+  );
+
+  return response.status;
 };

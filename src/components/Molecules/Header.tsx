@@ -7,7 +7,9 @@ import { useNavigate } from "@tanstack/react-router";
 import Menus from "src/components/Molecules/Menus";
 import ProfilePicture from "src/components/Molecules/ProfilePicture";
 
+import { requestLogout } from "src/API/REST/POST/Auth";
 import { cookieKey } from "src/Global/Constants";
+import { useAuthContext } from "src/hooks/useAuthContext";
 import useClientCookie from "src/hooks/useClientCookie";
 
 const StyledHeader = styled.header`
@@ -23,25 +25,52 @@ const StyledHeader = styled.header`
 `;
 
 function Header() {
-  const { deleteCookie } = useClientCookie();
+  const { deleteCookie, getCookie } = useClientCookie();
+  const { authContext } = useAuthContext();
   const navigate = useNavigate();
+
+  const handleLogout = async (token: string): Promise<void> => {
+    if (token) {
+      const response = await requestLogout(token);
+
+      if (response.toString().startsWith("2")) {
+        deleteCookie({ cookieKey, path: "/" });
+        navigate({ replace: true, to: "/login" });
+      }
+    }
+  };
 
   return (
     <StyledHeader>
       <Menus>
         <Menus.Menu>
           <Menus.Toggle id={"btn-user"} $icon={{ $height: 3.6, $width: 3.6 }}>
-            <ProfilePicture textName="Administrator" />
+            <ProfilePicture
+              imgSrc={
+                authContext.photo.location
+                  ? `${
+                      import.meta.env.VITE_URL_SERVER
+                    }/storage/v1/object/public/${authContext.photo.location}`
+                  : ""
+              }
+              textName={`${authContext.firstName || ""} ${
+                authContext.lastName || ""
+              }`}
+            />
           </Menus.Toggle>
 
           <Menus.List id={"btn-user"}>
             <div>
               <Menus.Button
                 icon={<UserIcon height={16} width={16} />}
-                onClick={() => null}
+                onClick={(e) => {
+                  e.preventDefault();
+
+                  navigate({ to: "/account" });
+                }}
                 disabled={false}
               >
-                <span>Profile</span>
+                <span>Account</span>
               </Menus.Button>
 
               <Menus.Button
@@ -49,8 +78,7 @@ function Header() {
                 onClick={(e) => {
                   e.preventDefault();
 
-                  deleteCookie({ cookieKey, path: "/" });
-                  navigate({ replace: true, to: "/login" });
+                  handleLogout(getCookie(cookieKey) ?? "");
                 }}
                 disabled={false}
               >

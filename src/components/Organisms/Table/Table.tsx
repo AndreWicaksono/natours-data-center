@@ -61,12 +61,12 @@ const Empty = styled.p`
 `;
 
 const TableContext = createContext<{ columns: string }>({
-  columns: "0.6fr 1.8fr 2.2fr 1fr 1fr 1fr",
+  columns: "6.4rem 1.8fr 2.2fr 1fr 1fr 1fr",
 });
 
 const Table = ({
   children,
-  columns = "0.6fr 1.8fr 2.2fr 1fr 1fr 1fr",
+  columns = "6.4rem 1.8fr 2.2fr 1fr 1fr 1fr",
   role,
 }: {
   children: ReactNode;

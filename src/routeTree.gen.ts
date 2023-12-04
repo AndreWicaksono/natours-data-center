@@ -3,6 +3,7 @@ import { route as routeIndex } from "src/routes/index";
 import { route as routeLogin } from "src/routes/login";
 
 import { route as routeAppLayout } from "src/routes/_applayout";
+import { route as routeAppAccount } from "src/routes/account";
 import { route as routeAppIndex } from "src/routes/dashboard";
 import { route as routeAppTours } from "src/routes/tours";
 
@@ -16,6 +17,9 @@ declare module "@tanstack/react-router" {
     };
     "/_applayout": {
       parentRoute: typeof routeRoot;
+    };
+    "/account": {
+      parentRoute: typeof routeAppLayout;
     };
     "/dashboard": {
       parentRoute: typeof routeAppLayout;
@@ -41,6 +45,11 @@ Object.assign(routeAppLayout.options, {
   getParentRoute: () => routeRoot,
 });
 
+Object.assign(routeAppAccount.options, {
+  path: "/account",
+  getParentRoute: () => routeAppLayout,
+});
+
 Object.assign(routeAppIndex.options, {
   path: "/dashboard",
   getParentRoute: () => routeAppLayout,
@@ -54,5 +63,5 @@ Object.assign(routeAppTours.options, {
 export const routeTree = routeRoot.addChildren([
   routeIndex,
   routeLogin,
-  routeAppLayout.addChildren([routeAppIndex, routeAppTours]),
+  routeAppLayout.addChildren([routeAppIndex, routeAppTours, routeAppAccount]),
 ]);

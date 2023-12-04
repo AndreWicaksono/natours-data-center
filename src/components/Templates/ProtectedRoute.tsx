@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useEffect } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { Navigate } from "@tanstack/react-router";
@@ -7,6 +7,7 @@ import styled from "styled-components";
 import Spinner from "src/components/Atoms/Spinner";
 
 import { cookieKey } from "src/Global/Constants";
+import { useAuthContext } from "src/hooks/useAuthContext";
 import useClientCookie from "src/hooks/useClientCookie";
 import { useVerifyAuth } from "src/hooks/useVerifyAuth";
 
@@ -20,11 +21,20 @@ export const FullPage = styled.div`
 
 const ProtectedRoute: FC<{ children: ReactNode }> = ({ children }) => {
   // 1. Load the authenticated user
+  const { setAuthContext } = useAuthContext();
   const { getCookie } = useClientCookie();
   const queryClient = useQueryClient();
-  const { data, isLoading } = useVerifyAuth();
+  const { data, isLoading, isSuccess } = useVerifyAuth();
 
   const cookieAuth = getCookie(cookieKey) ?? "";
+
+  useEffect(() => {
+    if (isSuccess) {
+      setAuthContext(data.authorizedFor);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess]);
 
   if (!cookieAuth) {
     queryClient.clear();
@@ -45,7 +55,7 @@ const ProtectedRoute: FC<{ children: ReactNode }> = ({ children }) => {
       </FullPage>
     );
 
-  // 4. If there IS a user, render the app
+  // 4. If there is a user, then render the app
   if (data.isAuthenticated) return children;
 };
 
