@@ -17,7 +17,7 @@ import SpinnerMini from "src/components/Atoms/SpinnerMini";
 import Form from "src/components/Molecules/Form/Form";
 import RowFormVertical from "src/components/Molecules/Form/RowFormVertical";
 
-import { login } from "src/API/REST/POST/Auth";
+import { requestLogin } from "src/API/REST/POST/Auth";
 import { cookieKey } from "src/Global/Constants";
 import useClientCookie from "src/hooks/useClientCookie";
 import { isValidEmail } from "src/utils/RegExp";
@@ -46,12 +46,18 @@ const FormLogin: FC<
 
   const { isPending, mutate } = useMutation({
     gcTime: 0,
-    mutationFn: login,
+    mutationFn: requestLogin,
     onError: (error) => {
       toast.error(error.message);
     },
     onSuccess: (response) => {
-      queryClient.setQueryData(["auth"], { email: response.user.email });
+      const authInfo = {
+        created_at: response.user.created_at,
+        email: response.user.email,
+        id: response.user.id,
+      };
+
+      queryClient.setQueryData(["auth"], authInfo);
 
       setCookie({
         cookieExpires: new Date(
