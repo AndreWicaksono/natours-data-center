@@ -2,8 +2,8 @@ import { Outlet } from "@tanstack/react-router";
 
 import styled from "styled-components";
 
-import Header from "src/components/Molecules/Header";
-import Sidebar from "src/components/Organisms/ComposedAsFeatures/Sidebar";
+import DashboardHeader from "src/components/Molecules/ComposedAsFeatures/DashboardHeader";
+import DashboardSidebar from "src/components/Organisms/ComposedAsFeatures/DashboardSidebar";
 
 const StyledAppLayout = styled.div`
   display: grid;
@@ -29,8 +29,10 @@ const Container = styled.div`
 const TemplateApp = () => {
   return (
     <StyledAppLayout>
-      <Header />
-      <Sidebar />
+      <DashboardHeader />
+
+      <DashboardSidebar />
+
       <Main>
         <Container>
           <Outlet />

@@ -6,50 +6,48 @@ import {
   ToursCollectionQueryVariables,
 } from "src/gql/graphql";
 
-export const Query_Document_ToursCollection = graphql(
-  `
-    query ToursCollection(
-      $filter: toursFilter
-      $orderBy: [toursOrderBy!]
-      $first: Int
-      $last: Int
-      $after: Cursor
-      $before: Cursor
+export const Query_Document_ToursCollection = graphql(`
+  query ToursCollection(
+    $filter: toursFilter
+    $orderBy: [toursOrderBy!]
+    $first: Int
+    $last: Int
+    $after: Cursor
+    $before: Cursor
+  ) {
+    toursCollection(
+      filter: $filter
+      orderBy: $orderBy
+      first: $first
+      last: $last
+      after: $after
+      before: $before
     ) {
-      toursCollection(
-        filter: $filter
-        orderBy: $orderBy
-        first: $first
-        last: $last
-        after: $after
-        before: $before
-      ) {
-        edges {
-          cursor
-          node {
-            id
-            name
-            availability
-            capacity
-            city
-            description
-            is_published
-            photos
-            price
-            created_by
-            __typename
-          }
-        }
-        pageInfo {
-          endCursor
-          hasNextPage
-          hasPreviousPage
-          startCursor
+      edges {
+        cursor
+        node {
+          id
+          name
+          availability
+          capacity
+          city
+          description
+          is_published
+          photos
+          price
+          created_by
+          __typename
         }
       }
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
     }
-  `
-);
+  }
+`);
 
 export const requestToursCollection = async (
   queryVariables: ToursCollectionQueryVariables,

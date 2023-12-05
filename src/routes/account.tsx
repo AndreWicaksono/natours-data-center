@@ -1,4 +1,8 @@
+import { Suspense } from "react";
+
 import { FileRoute, lazyRouteComponent } from "@tanstack/react-router";
+
+import Spinner from "src/components/Atoms/Spinner";
 
 // eslint-disable-next-line react-refresh/only-export-components
 const TemplatePageAccount = lazyRouteComponent(
@@ -6,5 +10,9 @@ const TemplatePageAccount = lazyRouteComponent(
 );
 
 export const route = new FileRoute("/account").createRoute({
-  component: () => <TemplatePageAccount />,
+  component: () => (
+    <Suspense fallback={<Spinner />}>
+      <TemplatePageAccount />
+    </Suspense>
+  ),
 });

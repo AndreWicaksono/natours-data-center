@@ -20,77 +20,73 @@ export const Mutation_Document_DeleteFromToursCollection = graphql(`
   }
 `);
 
-export const Mutation_Document_InsertIntoToursCollection = graphql(
-  `
-    mutation InsertIntoToursCollection(
-      $name: String!
-      $availability: Int
-      $capacity: Int
-      $city: String!
-      $description: String
-      $is_published: Boolean
-      $photos: [JSON]
-      $price: Int
-    ) {
-      insertIntotoursCollection(
-        objects: {
-          name: $name
-          availability: $availability
-          capacity: $capacity
-          city: $city
-          description: $description
-          is_published: $is_published
-          photos: $photos
-          price: $price
-        }
-      ) {
-        records {
-          id
-          name
-          availability
-          capacity
-          city
-          description
-          is_published
-          photos
-          price
-          created_by
-          created_at
-          updated_at
-          __typename
-        }
+export const Mutation_Document_InsertIntoToursCollection = graphql(`
+  mutation InsertIntoToursCollection(
+    $name: String!
+    $availability: Int
+    $capacity: Int
+    $city: String!
+    $description: String
+    $is_published: Boolean
+    $photos: [JSON]
+    $price: Int
+  ) {
+    insertIntotoursCollection(
+      objects: {
+        name: $name
+        availability: $availability
+        capacity: $capacity
+        city: $city
+        description: $description
+        is_published: $is_published
+        photos: $photos
+        price: $price
       }
-    }
-  `
-);
-
-export const Mutation_Document_UpdateToursCollection = graphql(
-  `
-    mutation UpdateToursCollection(
-      $set: toursUpdateInput!
-      $filter: toursFilter
-      $atMost: Int!
     ) {
-      updatetoursCollection(set: $set, filter: $filter, atMost: $atMost) {
-        affectedCount
-        records {
-          id
-          name
-          availability
-          capacity
-          city
-          description
-          is_published
-          photos
-          price
-          created_by
-          __typename
-        }
+      records {
+        id
+        name
+        availability
+        capacity
+        city
+        description
+        is_published
+        photos
+        price
+        created_by
+        created_at
+        updated_at
         __typename
       }
     }
-  `
-);
+  }
+`);
+
+export const Mutation_Document_UpdateToursCollection = graphql(`
+  mutation UpdateToursCollection(
+    $set: toursUpdateInput!
+    $filter: toursFilter
+    $atMost: Int!
+  ) {
+    updatetoursCollection(set: $set, filter: $filter, atMost: $atMost) {
+      affectedCount
+      records {
+        id
+        name
+        availability
+        capacity
+        city
+        description
+        is_published
+        photos
+        price
+        created_by
+        __typename
+      }
+      __typename
+    }
+  }
+`);
 
 export const requestCreateTour = async ({
   payload,
