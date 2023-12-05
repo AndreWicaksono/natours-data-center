@@ -1,4 +1,4 @@
-import { FC, MouseEventHandler, ReactElement } from "react";
+import { CSSProperties, FC, MouseEventHandler, ReactElement } from "react";
 
 import { ExclamationCircleIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
@@ -24,6 +24,7 @@ import { formatRupiah } from "src/utils/Number";
 
 const TableTours: FC<{
   columns: { id: string; label: ReactElement | string }[];
+  header?: { cssOption: CSSProperties };
   onDeleteRow: {
     handler: (
       tourId: string,
@@ -45,6 +46,7 @@ const TableTours: FC<{
   };
 }> = ({
   columns,
+  header,
   onDeleteRow,
   onNavigateToNextPage,
   onNavigateToPreviousPage,
@@ -54,8 +56,8 @@ const TableTours: FC<{
   return (
     <>
       <LayoutRow>
-        <Table role="table">
-          <Table.Header>
+        <Table cssOption={{ overflow: "visible" }} role="table">
+          <Table.Header cssOption={header?.cssOption}>
             {columns.map((column) => {
               if (typeof column.label === "string")
                 return <div key={column.id}>{column.label}</div>;
@@ -124,6 +126,7 @@ const TableTours: FC<{
                         ),
                       isLoading: onDeleteRow.isLoading,
                     }}
+                    row={{ cssOption: { overflowX: "hidden" } }}
                   >
                     {tour.node.photos && tour.node.photos.length > 0 ? (
                       <ImgThumbnail

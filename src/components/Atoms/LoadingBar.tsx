@@ -2,11 +2,11 @@ import styled, { css, keyframes } from "styled-components";
 
 const animationShimmer = keyframes`
   0% {
-    background-position: -468px 0;
+    background-position: -46.8rem 0;
   }
   
   100% {
-    background-position: 468px 0; 
+    background-position: 46.8rem 0; 
   }
 `;
 
@@ -16,7 +16,7 @@ export const LoadingBar = styled.div<{
   $height?: string;
   $width?: string;
 }>`
-  ${({ $height = "24px", $width = "100%" }) => {
+  ${({ $height = "2.4rem", $width = "100%" }) => {
     return css`
       height: ${$height};
       width: ${$width};
@@ -46,7 +46,7 @@ export const LoadingBar = styled.div<{
     #f6f7f8 100%
   );
   background-repeat: no-repeat;
-  background-size: 800px 104px;
+  background-size: 80rem 10.4rem;
   border-radius: ${({ $borderRadius = 0 }) => $borderRadius};
 
   ${({ $css }) => $css ?? ""};

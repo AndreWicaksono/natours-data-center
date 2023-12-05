@@ -31,7 +31,7 @@ import {
 } from "src/gql/graphql";
 import useClientCookie from "src/hooks/useClientCookie";
 import { arraySliceIntoChunks } from "src/utils/Array";
-import { clearGraphQLPaginationObjectKeys } from "src/utils/Functions";
+import { clearGraphQLPaginationObjectKeys } from "src/utils/Object";
 
 type Tours_QueryVariables_State_Object = {
   filter?: ToursFilter;
@@ -212,6 +212,9 @@ const TemplatePageTours: FC = () => {
             { id: "column-tour-availability", label: "Availability" },
             { id: "column-tour-row-navigation", label: "" },
           ]}
+          header={{
+            cssOption: { position: "sticky", top: "-4.1rem", zIndex: 1 },
+          }}
           onDeleteRow={{
             handler: (tourId, tourPhotos) => {
               mutateDeleteTour({
@@ -344,8 +347,11 @@ const useTourMutationCacheHandler = (): {
     });
 
     const isAllPagesFetched: boolean =
-      !queryData[queryData.length - 1][1]?.toursCollection?.pageInfo
-        .hasNextPage ?? false;
+      typeof queryData[queryData.length - 1][1]?.toursCollection?.pageInfo
+        .hasNextPage !== "undefined"
+        ? !queryData[queryData.length - 1][1]?.toursCollection?.pageInfo
+            .hasNextPage
+        : true;
 
     // START: Transformation of the data structure before it is given to the new state
     const mergedOldEdges: Array<ToursEdge> = [

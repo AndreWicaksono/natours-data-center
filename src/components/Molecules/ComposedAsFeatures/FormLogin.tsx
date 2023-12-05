@@ -12,7 +12,7 @@ import dayjs from "dayjs";
 import { toast } from "react-hot-toast";
 
 import Button from "src/components/Atoms/Button";
-import Input from "src/components/Atoms/Input";
+import Input from "src/components/Atoms/FormInput/Input";
 import SpinnerMini from "src/components/Atoms/SpinnerMini";
 import Form from "src/components/Molecules/Form/Form";
 import RowFormVertical from "src/components/Molecules/Form/RowFormVertical";

@@ -1,3 +1,5 @@
+import { isLetterUpperCase } from "src/utils/RegExp";
+
 export const generateDuplicateFilename = (filename: string): string => {
   let newFilename = "";
 
@@ -17,3 +19,6 @@ export const generateDuplicateFilename = (filename: string): string => {
 
   return newFilename;
 };
+
+export const camelCaseToKebabCase = (input: string) =>
+  input.replace(isLetterUpperCase, (v) => `-${v.toLowerCase()}`);

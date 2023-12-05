@@ -1,4 +1,5 @@
 import {
+  CSSProperties,
   FC,
   HTMLAttributes,
   MouseEventHandler,
@@ -138,6 +139,9 @@ export const TableRow: FC<
       isLoading: boolean;
     };
     onDuplicate?: MouseEventHandler<HTMLButtonElement>;
+    row?: {
+      cssOption?: CSSProperties;
+    };
   } & HTMLAttributes<HTMLDivElement>
 > = ({
   children,
@@ -146,9 +150,10 @@ export const TableRow: FC<
   id,
   onDelete,
   onDuplicate,
+  row,
 }) => {
   return (
-    <Table.Row>
+    <Table.Row cssOption={row?.cssOption}>
       {children}
 
       {!disableRowMenuActions && (

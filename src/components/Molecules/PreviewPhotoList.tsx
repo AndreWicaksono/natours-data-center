@@ -2,7 +2,7 @@ import { FC, MouseEventHandler } from "react";
 
 import { XCircleIcon } from "@heroicons/react/24/outline";
 
-import { ImgContainer } from "src/components/Atoms/FileInput";
+import { ImgContainer } from "src/components/Atoms/FormInput/FileInput";
 
 const PreviewPhotoList: FC<{
   data: Array<{ id: string; src: string }>;
