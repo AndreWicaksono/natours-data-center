@@ -1,0 +1,18 @@
+services:
+  natours-data-center:
+    build:
+      args:
+        VITE_KEY_PUBLIC: ${VITE_KEY_PUBLIC}
+        VITE_URL_GRAPHQL: ${VITE_URL_GRAPHQL}
+        VITE_URL_SERVER: ${VITE_URL_SERVER}
+      context: .
+      dockerfile: Dockerfile
+      target: preview
+    command: npm run preview
+    container_name: preview
+    env_file:
+      - .env
+    image: natours-data-center:preview
+    ports:
+      - 4173:4173
+    working_dir: /app/natours-data-center

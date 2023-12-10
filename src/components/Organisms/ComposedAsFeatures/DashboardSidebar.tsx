@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 
 import styled from "styled-components";
 
@@ -109,11 +109,19 @@ const NavLinkThemeNatours = styled(Link)`
 `;
 
 const Sidebar = () => {
+  const { location } = useRouterState();
+
   const menus: Array<{ id: string; element: ReactNode }> = [
     {
       id: "navLinkDashboard",
       element: (
-        <NavLinkThemeNatours to="/dashboard" preload={false}>
+        <NavLinkThemeNatours
+          activeProps={{
+            className: location.pathname === "/dashboard" ? "active" : "",
+          }}
+          to="/dashboard"
+          preload={false}
+        >
           <div className="bg-image-brand" />
 
           <HomeIcon height={24} width={24} />
@@ -126,7 +134,13 @@ const Sidebar = () => {
     {
       id: "navLinkTours",
       element: (
-        <NavLinkThemeNatours to="/tours" preload={false}>
+        <NavLinkThemeNatours
+          activeProps={{
+            className: location.pathname === "/tours" ? "active" : "",
+          }}
+          to="/tours"
+          preload={false}
+        >
           <div className="bg-image-brand" />
 
           <GlobeAsiaAustraliaIcon height={24} width={24} />

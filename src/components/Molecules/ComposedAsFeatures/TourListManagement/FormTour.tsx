@@ -12,11 +12,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 
 import Button from "src/components/Atoms/Button";
-import FileInput, { ImgContainer } from "src/components/Atoms/FileInput";
-import Input from "src/components/Atoms/Input";
+import FileInput, {
+  ImgContainer,
+} from "src/components/Atoms/FormInput/FileInput";
+import Input from "src/components/Atoms/FormInput/Input";
 import SpinnerMini from "src/components/Atoms/SpinnerMini";
-import Textarea from "src/components/Atoms/TextArea";
-import ToggleSwitch from "src/components/Atoms/ToggleSwitch";
+import Textarea from "src/components/Atoms/FormInput/TextArea";
+import ToggleSwitch from "src/components/Atoms/FormInput/ToggleSwitch";
 import Form from "src/components/Molecules/Form/Form";
 import PreviewPhotoList from "src/components/Molecules/PreviewPhotoList";
 import RowFormHorizontal, {
@@ -678,29 +680,31 @@ const FormTour: FC<
         >
           <>
             <Button
+              $size="medium"
+              $variation="secondary"
+              disabled={isPendingOnCreateTour || isPendingOnUpdateTour}
               onClick={() => closeModal?.()}
               type="button"
-              $variation="secondary"
-              $size="medium"
             >
               Cancel
             </Button>
 
             <Button
+              $flex={{ alignItems: "center", gap: ".4rem" }}
+              $size="medium"
               disabled={shouldSaveButtonDisabled(
                 isPendingOnCreateTour || isPendingOnUpdateTour,
                 mode
               )}
-              $flex={{ alignItems: "center", gap: ".4rem" }}
-              $size="medium"
               type="submit"
             >
-              {!isPendingOnCreateTour || !isPendingOnUpdateTour ? (
-                textButtonSave
-              ) : (
+              {isPendingOnCreateTour || isPendingOnUpdateTour ? (
                 <>
-                  <SpinnerMini /> <span>Saving</span>
+                  <SpinnerMini height={"1.6rem"} width={"1.6rem"} />
+                  <span>Saving</span>
                 </>
+              ) : (
+                <span>{textButtonSave}</span>
               )}
             </Button>
           </>

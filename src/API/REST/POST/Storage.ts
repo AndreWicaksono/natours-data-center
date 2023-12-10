@@ -1,24 +1,30 @@
 import { generateDuplicateFilename } from "src/utils/String";
 
-export const isFilenameExistOnBucket = async ({
+export const requestSearchForObjectsUnderPrefix = async ({
   bucket,
-  filenameWithoutExtension,
+  payload,
   token,
 }: {
   bucket: string;
-  filenameWithoutExtension: string;
+  payload: {
+    limit?: number;
+    prefix: string;
+    search: string;
+    sortBy: {
+      column: string;
+      order: string;
+    };
+  };
   token: string;
 }) => {
   const response = await fetch(
     `${import.meta.env.VITE_URL_SERVER}/storage/v1/object/list/${bucket}`,
     {
       body: JSON.stringify({
-        prefix: "",
-        search: filenameWithoutExtension,
-        sortBy: {
-          column: "created_at",
-          order: "desc",
-        },
+        limit: payload.limit,
+        prefix: payload.prefix,
+        search: payload.search,
+        sortBy: payload.sortBy,
       }),
       headers: {
         apiKey: import.meta.env.VITE_KEY_PUBLIC,
@@ -123,9 +129,17 @@ export const requestPhotosUploadToStorageWithDuplicationHandler = async ({
 }): Promise<Array<{ id: string; location: string }>> => {
   return await Promise.all(
     payload.map(async (photoFile) => {
-      const duplicateList = await isFilenameExistOnBucket({
+      const duplicateList = await requestSearchForObjectsUnderPrefix({
         bucket: bucket,
-        filenameWithoutExtension: photoFile.name.split(".")[0],
+        payload: {
+          limit: 1,
+          prefix: "",
+          search: photoFile.name.split(".")[0],
+          sortBy: {
+            column: "created_at",
+            order: "desc",
+          },
+        },
         token: token,
       });
 

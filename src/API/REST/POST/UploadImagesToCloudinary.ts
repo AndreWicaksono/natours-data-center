@@ -1,8 +1,8 @@
-export const processImagesOnCloudinary = async ({
+export const requestImagesUploadOnCloudinary = async ({
   action,
   fillFormData,
 }: {
-  action: "upload" | "delete";
+  action: "delete" | "upload";
   fillFormData: (form: FormData) => void;
 }): Promise<Response> => {
   const formData = new FormData();
