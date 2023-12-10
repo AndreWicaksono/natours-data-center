@@ -84,6 +84,7 @@ const TableToursDataViewOperations: FC<{
       />
 
       <Select
+        name="selectSort"
         onChange={onDropdownSelectChange}
         options={optionsOrderBy}
         value={(() => {

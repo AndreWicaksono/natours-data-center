@@ -1,5 +1,5 @@
-import styled, { keyframes } from "styled-components";
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
+import styled, { keyframes } from "styled-components";
 
 const rotate = keyframes`
   to {
@@ -8,8 +8,9 @@ const rotate = keyframes`
 `;
 
 const SpinnerMini = styled(ArrowPathIcon)`
-  width: 2.4rem;
-  height: 2.4rem;
+  height: ${({ height }) => (height ? height : "2.4rem")};
+  width: ${({ width }) => (width ? width : "2.4rem")};
+
   animation: ${rotate} 1.5s infinite linear;
 `;
 

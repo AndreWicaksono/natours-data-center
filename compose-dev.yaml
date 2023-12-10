@@ -1,0 +1,18 @@
+services:
+  natours-data-center:
+    build:
+      dockerfile: Dockerfile
+      target: development
+    develop:
+      watch:
+        - action: sync
+          path: ./
+          target: /app/natours-data-center
+    command: npm run dev
+    container_name: development
+    env_file:
+      - .env
+    image: natours-data-center:dev
+    ports:
+      - 5173:5173
+    working_dir: /app/natours-data-center

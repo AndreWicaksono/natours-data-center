@@ -1,8 +1,14 @@
-import { FC, MouseEventHandler, ReactElement } from "react";
+import {
+  CSSProperties,
+  FC,
+  MouseEventHandler,
+  ReactElement,
+  RefObject,
+} from "react";
 
 import { ExclamationCircleIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
-import FormTour from "src/components/Molecules/ComposedAsFeatures/FormTour";
+import FormTour from "src/components/Molecules/ComposedAsFeatures/TourListManagement/FormTour";
 import Pagination from "src/components/Molecules/Pagination";
 import Table from "src/components/Organisms/Table/Table";
 import TableRow, {
@@ -20,10 +26,14 @@ import {
   ToursCollectionQuery,
   UpdateToursCollectionMutation,
 } from "src/gql/graphql";
+import { useSetViewPosition } from "src/hooks/useSetViewPosition";
+import { useUpdateEffect } from "src/hooks/useUpdateEffect";
 import { formatRupiah } from "src/utils/Number";
 
 const TableTours: FC<{
   columns: { id: string; label: ReactElement | string }[];
+  currentPage: number;
+  header?: { cssOption: CSSProperties };
   onDeleteRow: {
     handler: (
       tourId: string,
@@ -37,6 +47,12 @@ const TableTours: FC<{
     data: UpdateToursCollectionMutation,
     fieldsChanged: string[]
   ) => void;
+  resetViewPosition?: {
+    behavior: "auto" | "instant" | "smooth";
+    block?: ScrollLogicalPosition;
+    inline?: ScrollLogicalPosition;
+    ref: RefObject<HTMLDivElement>;
+  };
   rows: {
     data: ToursCollectionQuery | null;
     isError: boolean;
@@ -45,17 +61,33 @@ const TableTours: FC<{
   };
 }> = ({
   columns,
+  currentPage,
+  header,
   onDeleteRow,
   onNavigateToNextPage,
   onNavigateToPreviousPage,
   onSuccessUpdateRow,
+  resetViewPosition,
   rows: { data, isError, isLoading, isSuccess },
 }) => {
+  const setViewPosition = useSetViewPosition();
+
+  useUpdateEffect(() => {
+    if (resetViewPosition) {
+      setViewPosition({
+        behavior: resetViewPosition?.behavior,
+        block: resetViewPosition?.block,
+        inline: resetViewPosition?.inline,
+        ref: resetViewPosition.ref,
+      });
+    }
+  }, [currentPage]);
+
   return (
     <>
       <LayoutRow>
-        <Table role="table">
-          <Table.Header>
+        <Table cssOption={{ overflow: "visible" }} role="table">
+          <Table.Header cssOption={header?.cssOption}>
             {columns.map((column) => {
               if (typeof column.label === "string")
                 return <div key={column.id}>{column.label}</div>;
@@ -124,6 +156,7 @@ const TableTours: FC<{
                         ),
                       isLoading: onDeleteRow.isLoading,
                     }}
+                    row={{ cssOption: { overflowX: "hidden" } }}
                   >
                     {tour.node.photos && tour.node.photos.length > 0 ? (
                       <ImgThumbnail

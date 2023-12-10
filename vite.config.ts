@@ -34,8 +34,8 @@ export default defineConfig(({ mode }) => {
             [
               "babel-plugin-styled-components",
               {
-                displayName: true,
-                fileName: false,
+                displayName: mode === "development",
+                fileName: mode === "development",
               },
             ],
           ],
@@ -46,6 +46,10 @@ export default defineConfig(({ mode }) => {
       alias: {
         src: "/src",
       },
+    },
+    server: {
+      host: "0.0.0.0",
+      port: mode === "development" ? 5173 : 4173,
     },
   };
 });

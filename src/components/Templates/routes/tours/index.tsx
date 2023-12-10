@@ -1,4 +1,11 @@
-import { Dispatch, FC, SetStateAction, useState } from "react";
+import {
+  Dispatch,
+  FC,
+  RefObject,
+  SetStateAction,
+  useRef,
+  useState,
+} from "react";
 
 import { PlusIcon } from "@heroicons/react/20/solid";
 import {
@@ -11,9 +18,9 @@ import toast from "react-hot-toast";
 
 import Button from "src/components/Atoms/Button";
 import Heading from "src/components/Atoms/Heading";
-import FormTour from "src/components/Molecules/ComposedAsFeatures/FormTour";
-import TableToursDataViewOperations from "src/components/Molecules/ComposedAsFeatures/TableToursDataViewOperations";
-import TableTours from "src/components/Organisms/ComposedAsFeatures/TableTours";
+import FormTour from "src/components/Molecules/ComposedAsFeatures/TourListManagement/FormTour";
+import TableToursDataViewOperations from "src/components/Molecules/ComposedAsFeatures/TourListManagement/TableToursDataViewOperations";
+import TableTours from "src/components/Organisms/ComposedAsFeatures/TourListManagement/TableTours";
 import Modal from "src/components/Organisms/Modal";
 
 import { requestDeleteTour } from "src/API/GraphQL/Mutation/ToursCollection";
@@ -30,8 +37,9 @@ import {
   UpdateToursCollectionMutation,
 } from "src/gql/graphql";
 import useClientCookie from "src/hooks/useClientCookie";
+import { useSmoothScrollIntoViewBehavior } from "src/hooks/useSmoothScrollIntoViewBehavior";
 import { arraySliceIntoChunks } from "src/utils/Array";
-import { clearGraphQLPaginationObjectKeys } from "src/utils/Functions";
+import { clearGraphQLPaginationObjectKeys } from "src/utils/Object";
 
 type Tours_QueryVariables_State_Object = {
   filter?: ToursFilter;
@@ -50,7 +58,7 @@ const TemplatePageTours: FC = () => {
       first: 10,
     });
 
-  const queryKeyDependancies: {
+  const queryKeyDependencies: {
     filter: Tours_QueryVariables_State_Object["filter"];
     orderBy: Tours_QueryVariables_State_Object["orderBy"];
     page: number;
@@ -59,6 +67,8 @@ const TemplatePageTours: FC = () => {
     orderBy: queryVariables.orderBy,
     page,
   };
+
+  const refResetViewPosition: RefObject<HTMLDivElement> = useRef(null);
 
   const { getCookie } = useClientCookie();
 
@@ -106,11 +116,12 @@ const TemplatePageTours: FC = () => {
       await requestToursCollection(queryVariables, getCookie(cookieKey) ?? ""),
     // Using custom dependencies for queryKey to get consistent UI behavior after row deletion (always pick 1 item from next page & append into last sequence of current page)
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: ["tours", queryKeyDependancies],
+    queryKey: ["tours", queryKeyDependencies],
     staleTime: 60 * 60 * 1000,
   });
 
   const queryClient = useQueryClient();
+  const resetViewPositionBehavior = useSmoothScrollIntoViewBehavior();
 
   const {
     handleCacheUpdateOnSuccessCreateTour,
@@ -119,7 +130,7 @@ const TemplatePageTours: FC = () => {
 
   return (
     <>
-      <LayoutRow $type="horizontal">
+      <LayoutRow $type="horizontal" ref={refResetViewPosition}>
         <Heading as="h1">All tours</Heading>
 
         <TableToursDataViewOperations
@@ -212,6 +223,10 @@ const TemplatePageTours: FC = () => {
             { id: "column-tour-availability", label: "Availability" },
             { id: "column-tour-row-navigation", label: "" },
           ]}
+          currentPage={page}
+          header={{
+            cssOption: { position: "sticky", top: "-4.1rem", zIndex: 1 },
+          }}
           onDeleteRow={{
             handler: (tourId, tourPhotos) => {
               mutateDeleteTour({
@@ -242,7 +257,7 @@ const TemplatePageTours: FC = () => {
             setQueryVariables((prevState) => {
               const newState = { ...prevState };
 
-              if (queryKeyDependancies.page === 2) {
+              if (queryKeyDependencies.page === 2) {
                 clearGraphQLPaginationObjectKeys(newState);
 
                 // Return initial query variables to sync with updated cache condition
@@ -262,8 +277,13 @@ const TemplatePageTours: FC = () => {
             setPage((prevState) => prevState - 1);
           }}
           onSuccessUpdateRow={(data) =>
-            handleCacheUpdateOnSuccessUpdateTour(data, queryKeyDependancies)
+            handleCacheUpdateOnSuccessUpdateTour(data, queryKeyDependencies)
           }
+          resetViewPosition={{
+            behavior: resetViewPositionBehavior,
+            block: "center",
+            ref: refResetViewPosition,
+          }}
           rows={{ data: data ?? null, isError, isLoading, isSuccess }}
         />
       </LayoutRow>
@@ -344,8 +364,11 @@ const useTourMutationCacheHandler = (): {
     });
 
     const isAllPagesFetched: boolean =
-      !queryData[queryData.length - 1][1]?.toursCollection?.pageInfo
-        .hasNextPage ?? false;
+      typeof queryData[queryData.length - 1][1]?.toursCollection?.pageInfo
+        .hasNextPage !== "undefined"
+        ? !queryData[queryData.length - 1][1]?.toursCollection?.pageInfo
+            .hasNextPage
+        : true;
 
     // START: Transformation of the data structure before it is given to the new state
     const mergedOldEdges: Array<ToursEdge> = [
