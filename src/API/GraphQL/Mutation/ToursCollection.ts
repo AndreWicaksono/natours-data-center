@@ -23,6 +23,7 @@ export const Mutation_Document_DeleteFromToursCollection = graphql(`
 export const Mutation_Document_InsertIntoToursCollection = graphql(`
   mutation InsertIntoToursCollection(
     $name: String!
+    $slug: String!
     $availability: Int
     $capacity: Int
     $city: String!
@@ -34,6 +35,7 @@ export const Mutation_Document_InsertIntoToursCollection = graphql(`
     insertIntotoursCollection(
       objects: {
         name: $name
+        slug: $slug
         availability: $availability
         capacity: $capacity
         city: $city
@@ -46,6 +48,7 @@ export const Mutation_Document_InsertIntoToursCollection = graphql(`
       records {
         id
         name
+        slug
         availability
         capacity
         city
@@ -73,6 +76,7 @@ export const Mutation_Document_UpdateToursCollection = graphql(`
       records {
         id
         name
+        slug
         availability
         capacity
         city
@@ -94,6 +98,7 @@ export const requestCreateTour = async ({
 }: {
   payload: {
     name: string;
+    slug: string;
     availability: number;
     capacity: number;
     city: string;
@@ -119,6 +124,7 @@ export const requestCreateTour = async ({
     Mutation_Document_InsertIntoToursCollection,
     {
       name: payload.name,
+      slug: payload.slug,
       availability: payload.availability,
       capacity: payload.capacity,
       city: payload.city,
@@ -174,6 +180,7 @@ export const requestUpdateTour = async ({
     tourId: string;
     data: {
       name?: string;
+      slug?: string;
       availability?: number;
       capacity?: number;
       city?: string;

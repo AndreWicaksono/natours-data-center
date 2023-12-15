@@ -18,7 +18,7 @@ import toast from "react-hot-toast";
 
 import Button from "src/components/Atoms/Button";
 import Heading from "src/components/Atoms/Heading";
-import FormTour from "src/components/Molecules/ComposedAsFeatures/TourListManagement/FormTour";
+import FormTour from "src/components/Organisms/ComposedAsFeatures/TourListManagement/FormTour";
 import TableToursDataViewOperations from "src/components/Molecules/ComposedAsFeatures/TourListManagement/TableToursDataViewOperations";
 import TableTours from "src/components/Organisms/ComposedAsFeatures/TourListManagement/TableTours";
 import Modal from "src/components/Organisms/Modal";
@@ -78,10 +78,12 @@ const TemplatePageTours: FC = () => {
       mutationFn: async ({
         id,
         photos,
+        slug,
         token,
       }: {
         id: string;
         photos: { id: string; location: string }[];
+        slug: string;
         token: string;
       }) => {
         if (photos.length > 0) {
@@ -95,6 +97,17 @@ const TemplatePageTours: FC = () => {
               });
             })
           );
+        }
+
+        if (slug) {
+          await queryClient.removeQueries({
+            queryKey: [
+              "toursBySlug",
+              {
+                slug,
+              },
+            ],
+          });
         }
 
         return await requestDeleteTour({
@@ -228,10 +241,11 @@ const TemplatePageTours: FC = () => {
             cssOption: { position: "sticky", top: "-4.1rem", zIndex: 1 },
           }}
           onDeleteRow={{
-            handler: (tourId, tourPhotos) => {
+            handler: (tourId, tourSlug, tourPhotos) => {
               mutateDeleteTour({
                 id: tourId,
                 photos: tourPhotos,
+                slug: tourSlug,
                 token: getCookie(cookieKey) ?? "",
               });
             },

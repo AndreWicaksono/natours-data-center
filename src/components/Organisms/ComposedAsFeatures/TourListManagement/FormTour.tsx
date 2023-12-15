@@ -8,8 +8,9 @@ import {
 } from "react";
 
 import { XCircleIcon } from "@heroicons/react/24/outline";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
+import slugify from "slugify";
 
 import Button from "src/components/Atoms/Button";
 import FileInput, {
@@ -33,7 +34,10 @@ import {
   requestCreateTour,
   requestUpdateTour,
 } from "src/API/GraphQL/Mutation/ToursCollection";
-import { requestToursCollection } from "src/API/GraphQL/Query/ToursCollection";
+import {
+  requestToursCollection,
+  requestToursCollectionByUsedSlug,
+} from "src/API/GraphQL/Query/ToursCollection";
 import { requestPhotoDelete } from "src/API/REST/POST/Storage";
 import { cookieKey } from "src/Global/Constants";
 import {
@@ -42,7 +46,10 @@ import {
   UpdateToursCollectionMutation,
 } from "src/gql/graphql";
 import useClientCookie from "src/hooks/useClientCookie";
+import { useDebounce } from "src/hooks/useDebounceValue";
 import { validateRequirementOfMandatory } from "src/utils/InputValidation";
+import { isValidSlug } from "src/utils/RegExp";
+import { useUpdateEffect } from "src/hooks/useUpdateEffect";
 
 const ThumbnailsPhotoToUploadPreview: FC<{
   data: File[];
@@ -85,6 +92,7 @@ const ThumbnailsPhotoToUploadPreview: FC<{
 
 type FormTour_State_DefaultValue_Object = {
   name: string;
+  slug: string;
   availability: number;
   capacity: number;
   city: string;
@@ -96,6 +104,7 @@ type FormTour_State_DefaultValue_Object = {
 
 type FormTour_State_Object = {
   name: { error: string; isRequired?: boolean; value: string };
+  slug: { error: string; isRequired?: boolean; value: string };
   availability: { error: string; isRequired?: boolean; value: number };
   capacity: { error: string; isRequired?: boolean; value: number };
   city: { error: string; isRequired?: boolean; value: string };
@@ -132,6 +141,7 @@ const FormTour: FC<
   closeModal,
   defaultInputValue = {
     name: "",
+    slug: "",
     availability: 0,
     capacity: 0,
     city: "",
@@ -151,6 +161,11 @@ const FormTour: FC<
       error: "",
       isRequired: true,
       value: defaultInputValue.name,
+    },
+    slug: {
+      error: "",
+      isRequired: true,
+      value: defaultInputValue.slug,
     },
     availability: {
       error: "",
@@ -172,7 +187,12 @@ const FormTour: FC<
     publish: { error: "", value: defaultInputValue.publish },
   });
 
+  const [shouldAutoGenerateSlug, setShouldAutoGenerateSlug] = useState<boolean>(
+    mode === "add"
+  );
+
   const { getCookie } = useClientCookie();
+  const debouncedValue = useDebounce<string>(form.slug.value, 500);
   const queryClient = useQueryClient();
 
   const getChangedFields = (formState: FormTour_State_Object): string[] => {
@@ -213,6 +233,7 @@ const FormTour: FC<
       gcTime: 0,
       mutationFn: async (payload: {
         name: FormDataEntryValue | null;
+        slug: FormDataEntryValue | null;
         availability: FormDataEntryValue | null;
         capacity: FormDataEntryValue | null;
         city: FormDataEntryValue | null;
@@ -224,6 +245,7 @@ const FormTour: FC<
         return await requestCreateTour({
           payload: {
             name: payload.name as string,
+            slug: payload.slug as string,
             availability: Number(payload.availability),
             capacity: Number(payload.capacity),
             city: payload.city as string,
@@ -236,6 +258,24 @@ const FormTour: FC<
         });
       },
       onError: (error) => {
+        if (
+          error.message.startsWith(
+            'duplicate key value violates unique constraint "tours_slug_key"'
+          )
+        ) {
+          setForm((prevState) => ({
+            ...prevState,
+            slug: {
+              ...prevState.slug,
+              error: "Slug is already taken",
+            },
+          }));
+
+          toast.error("Slug is already taken");
+
+          return;
+        }
+
         toast.error(error.message);
       },
       onSuccess: async () => {
@@ -249,6 +289,15 @@ const FormTour: FC<
               getCookie(cookieKey) ?? ""
             ),
           queryKey: ["tempTourAfterInsertion"],
+        });
+
+        queryClient.removeQueries({
+          queryKey: [
+            "toursBySlug",
+            {
+              slug: insertedTour.toursCollection?.edges[0].node.slug,
+            },
+          ],
         });
 
         if (onSuccessCreate) {
@@ -335,6 +384,29 @@ const FormTour: FC<
         toast.error(error.message);
       },
       onSuccess: (data) => {
+        if (
+          mode === "edit" &&
+          data.updatetoursCollection.records[0].slug !== defaultInputValue.slug
+        ) {
+          queryClient.removeQueries({
+            queryKey: [
+              "toursBySlug",
+              {
+                slug: defaultInputValue.slug,
+              },
+            ],
+          });
+        }
+
+        queryClient.removeQueries({
+          queryKey: [
+            "toursBySlug",
+            {
+              slug: data.updatetoursCollection.records[0].slug,
+            },
+          ],
+        });
+
         if (onSuccessUpdate) {
           onSuccessUpdate(data, getChangedFields(form));
         }
@@ -343,7 +415,62 @@ const FormTour: FC<
       },
     });
 
-  const onSubmit = (
+  const {
+    data: dataToursBySlug,
+    isLoading,
+    isSuccess,
+  } = useQuery({
+    enabled:
+      !form.slug.error &&
+      !debouncedValue.isLoading &&
+      debouncedValue.value.length > 0,
+    gcTime: (5 * 60) & 1000,
+    queryFn: async () => {
+      if (form.slug.error) return;
+      if (!debouncedValue.value || !isValidSlug.test(debouncedValue.value))
+        return null;
+
+      const response = await requestToursCollectionByUsedSlug(
+        debouncedValue.value,
+        getCookie(cookieKey) ?? ""
+      );
+
+      setShouldAutoGenerateSlug(false);
+
+      if (response) return response;
+
+      return null;
+    },
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [
+      "toursBySlug",
+      {
+        slug:
+          !isValidSlug.test(debouncedValue.value) || debouncedValue.isLoading
+            ? ""
+            : debouncedValue.value,
+      },
+    ],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  useUpdateEffect(() => {
+    if (isSuccess) {
+      setForm((prevState) => ({
+        ...prevState,
+        slug: {
+          ...prevState.slug,
+          error:
+            (dataToursBySlug?.toursCollection?.edges ?? []).length > 0 &&
+            dataToursBySlug?.toursCollection?.edges[0].node.id !== itemID
+              ? "Slug is already taken"
+              : "",
+        },
+      }));
+    }
+  }, [isSuccess]);
+
+  const onSubmit = async (
     e: BaseSyntheticEvent,
     submittedFormState: FormTour_State_Object
   ) => {
@@ -363,8 +490,29 @@ const FormTour: FC<
             "This field is required";
           countInputsValidationFails = countInputsValidationFails + 1;
         } else {
-          submittedFormState[inputName as keyof FormTour_State_Object].error =
-            "";
+          if (inputName !== "slug") {
+            submittedFormState[inputName as keyof FormTour_State_Object].error =
+              "";
+          }
+
+          if (inputName === "slug") {
+            if (!isValidSlug.test(data.get(inputName) as string)) {
+              submittedFormState[
+                inputName as keyof FormTour_State_Object
+              ].error = "Please fill with the valid slug";
+
+              countInputsValidationFails = countInputsValidationFails + 1;
+            } else if (
+              submittedFormState[inputName as keyof FormTour_State_Object]
+                .error === "Slug is already taken"
+            ) {
+              countInputsValidationFails = countInputsValidationFails + 1;
+            } else {
+              submittedFormState[
+                inputName as keyof FormTour_State_Object
+              ].error = "";
+            }
+          }
         }
       }
     }
@@ -384,6 +532,7 @@ const FormTour: FC<
         photosToUpload: submittedFormState.photosToUpload.value,
         price: data.get("price"),
         publish: data.get("publish"),
+        slug: data.get("slug"),
       });
     } else {
       mutateUpdateTour();
@@ -406,6 +555,7 @@ const FormTour: FC<
 
     return (
       form.name.value === defaultInputValue.name &&
+      form.slug.value === defaultInputValue.slug &&
       form.availability.value === defaultInputValue.availability &&
       form.capacity.value === defaultInputValue.capacity &&
       form.city.value === defaultInputValue.city &&
@@ -426,6 +576,8 @@ const FormTour: FC<
             disabled={isPendingOnCreateTour || isPendingOnUpdateTour}
             name="name"
             onBlur={(e) => {
+              setShouldAutoGenerateSlug(false);
+
               if (validateRequirementOfMandatory(e.target.value)) return;
 
               setForm((prevState) => ({
@@ -434,19 +586,76 @@ const FormTour: FC<
               }));
             }}
             onChange={(e) => {
+              setForm((prevState) => {
+                const newState = {
+                  ...prevState,
+                  name: {
+                    ...prevState.name,
+                    error: validateRequirementOfMandatory(e.target.value)
+                      ? ""
+                      : "This field is required",
+                    value: e.target.value,
+                  },
+                };
+
+                if (shouldAutoGenerateSlug) {
+                  newState.slug = {
+                    ...prevState.slug,
+                    error: "",
+                    value: slugify(e.target.value, { lower: true }),
+                  };
+                }
+
+                return newState;
+              });
+            }}
+            type="text"
+            value={form.name.value}
+          />
+        </RowFormHorizontal>
+
+        <RowFormHorizontal
+          error={form.slug.error}
+          label="Slug *"
+          loading={debouncedValue.isLoading === true || isLoading}
+          showValidIcon={form.slug.value.length > 0}
+        >
+          <Input
+            disabled={isPendingOnCreateTour || isPendingOnUpdateTour}
+            name="slug"
+            onBlur={(e) => {
+              if (validateRequirementOfMandatory(e.target.value)) return;
+
               setForm((prevState) => ({
                 ...prevState,
-                name: {
+                slug: { ...prevState.slug, error: "This field is required" },
+              }));
+            }}
+            onChange={(e) => {
+              const slug = slugify(e.target.value, {
+                lower: true,
+                trim: false,
+              });
+
+              const error =
+                (validateRequirementOfMandatory(e.target.value)
+                  ? ""
+                  : "This field is required") ||
+                (isValidSlug.test(slug)
+                  ? ""
+                  : "Please fill with the valid slug");
+
+              setForm((prevState) => ({
+                ...prevState,
+                slug: {
                   ...prevState.name,
-                  error: validateRequirementOfMandatory(e.target.value)
-                    ? ""
-                    : "This field is required",
-                  value: e.target.value,
+                  error,
+                  value: slug,
                 },
               }));
             }}
             type="text"
-            value={form.name.value}
+            value={form.slug.value}
           />
         </RowFormHorizontal>
 
@@ -693,7 +902,9 @@ const FormTour: FC<
               $flex={{ alignItems: "center", gap: ".4rem" }}
               $size="medium"
               disabled={shouldSaveButtonDisabled(
-                isPendingOnCreateTour || isPendingOnUpdateTour,
+                isPendingOnCreateTour ||
+                  isPendingOnUpdateTour ||
+                  debouncedValue.isLoading === true,
                 mode
               )}
               type="submit"
