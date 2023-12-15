@@ -1,5 +1,9 @@
 import { DetailedHTMLProps, FC, HTMLAttributes, ReactElement } from "react";
+
+import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import styled from "styled-components";
+
+import SpinnerMini from "src/components/Atoms/SpinnerMini";
 
 export const RowFormPreviewMultipleImagesUpload = styled.div`
   display: flex;
@@ -83,15 +87,26 @@ const RowFormHorizontal: FC<
       templateColumns?: string;
     };
     label?: string;
+    loading?: boolean;
+    showValidIcon?: boolean;
   }
-> = ({ children, error, grid, label }) => {
+> = ({ children, error, grid, label, loading, showValidIcon = false }) => {
   if (!children) return null;
 
   return (
     <StyledRowFormHorizontal $grid={grid}>
       {label && <Label htmlFor={children.props.id}>{label}</Label>}
       {children}
-      {error && <Error>{error}</Error>}
+
+      {error && !loading && <Error>{error}</Error>}
+
+      {loading && showValidIcon && (
+        <SpinnerMini height={"1.6rem"} width={"1.6rem"} />
+      )}
+
+      {showValidIcon && !error && !loading && (
+        <CheckCircleIcon fill="var(--color-brand-300)" height={20} width={20} />
+      )}
     </StyledRowFormHorizontal>
   );
 };

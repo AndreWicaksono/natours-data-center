@@ -8,8 +8,8 @@ import {
 
 import { ExclamationCircleIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
-import FormTour from "src/components/Molecules/ComposedAsFeatures/TourListManagement/FormTour";
 import Pagination from "src/components/Molecules/Pagination";
+import FormTour from "src/components/Organisms/ComposedAsFeatures/TourListManagement/FormTour";
 import Table from "src/components/Organisms/Table/Table";
 import TableRow, {
   ImgNoThumbnail,
@@ -37,6 +37,7 @@ const TableTours: FC<{
   onDeleteRow: {
     handler: (
       tourId: string,
+      tourSlug: string,
       tourPhotos: { id: string; location: string }[]
     ) => void;
     isLoading: boolean;
@@ -126,6 +127,7 @@ const TableTours: FC<{
                       <FormTour
                         defaultInputValue={{
                           name: tour.node.name ?? "",
+                          slug: tour.node.slug ?? "",
                           availability: tour.node.availability ?? 0,
                           capacity: tour.node.capacity ?? 0,
                           city: tour.node.city ?? "",
@@ -152,6 +154,7 @@ const TableTours: FC<{
                       handler: () =>
                         onDeleteRow.handler(
                           tour.node.id,
+                          tour.node.slug ?? "",
                           tour.node.photos ?? []
                         ),
                       isLoading: onDeleteRow.isLoading,
