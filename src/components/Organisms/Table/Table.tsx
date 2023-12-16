@@ -1,16 +1,35 @@
-import { ReactNode, createContext, useContext } from "react";
+import { CSSProperties, FC, ReactNode, createContext, useContext } from "react";
+
 import styled from "styled-components";
 
-const StyledTable = styled.div`
-  border: 1px solid var(--color-grey-200);
+import { generateCSSFromCSSProperties } from "src/utils/Object";
 
+const StyledTable = styled.div<{ $cssOption?: CSSProperties }>`
+  border: 1px solid var(--color-grey-200);
   font-size: 1.4rem;
   background-color: var(--color-grey-0);
   border-radius: 7px;
-  overflow: hidden;
+
+  ${({ $cssOption }) => {
+    if ($cssOption) {
+      return generateCSSFromCSSProperties($cssOption);
+    }
+
+    if (!$cssOption || ($cssOption && !$cssOption["overflow"])) {
+      return "overflow: hidden;";
+    }
+
+    return "";
+  }};
 `;
 
-const CommonRow = styled.div<{ $columns: string }>`
+const CommonRow = styled.div<{
+  $columns: string;
+  $cssOption?: CSSProperties;
+}>`
+  ${({ $cssOption }) =>
+    $cssOption ? generateCSSFromCSSProperties($cssOption) : ""}
+
   display: grid;
   grid-template-columns: ${(props) => props.$columns};
   column-gap: 2.4rem;
@@ -22,7 +41,7 @@ const StyledHeader = styled(CommonRow)`
   padding: 1.6rem 2.4rem;
 
   background-color: var(--color-zinc-100);
-  border-bottom: 1px solid var(--color-grey-100);
+  border-bottom: 1px solid var(--color-grey-200);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   font-weight: 600;
@@ -61,38 +80,57 @@ const Empty = styled.p`
 `;
 
 const TableContext = createContext<{ columns: string }>({
-  columns: "0.6fr 1.8fr 2.2fr 1fr 1fr 1fr",
+  columns: "6.4rem 1.8fr 2.2fr 1fr 1fr 1fr",
 });
 
 const Table = ({
   children,
-  columns = "0.6fr 1.8fr 2.2fr 1fr 1fr 1fr",
+  columns = "6.4rem 1.8fr 2.2fr 1fr 1fr 1fr",
+  cssOption,
   role,
 }: {
   children: ReactNode;
   columns?: string;
+  cssOption?: CSSProperties;
   role: string;
 }) => {
   return (
     <TableContext.Provider value={{ columns }}>
-      <StyledTable role={role}>{children}</StyledTable>
+      <StyledTable $cssOption={cssOption} role={role}>
+        {children}
+      </StyledTable>
     </TableContext.Provider>
   );
 };
 
-const Header = ({ children }: { children: ReactNode }) => {
+const Header = ({
+  children,
+  cssOption,
+}: {
+  children: ReactNode;
+  cssOption?: CSSProperties;
+}) => {
   const { columns } = useContext(TableContext);
 
   return (
-    <StyledHeader role="row" $columns={columns} as="header">
+    <StyledHeader
+      $columns={columns}
+      $cssOption={cssOption}
+      as="header"
+      role="row"
+    >
       {children}
     </StyledHeader>
   );
 };
-const Row = ({ children }: { children: ReactNode }) => {
+const Row: FC<{
+  children: ReactNode;
+  cssOption?: CSSProperties;
+}> = ({ children, cssOption }) => {
   const { columns } = useContext(TableContext);
+
   return (
-    <StyledRow role="row" $columns={columns}>
+    <StyledRow $columns={columns} $cssOption={cssOption} role="row">
       {children}
     </StyledRow>
   );

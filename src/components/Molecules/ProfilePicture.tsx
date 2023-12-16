@@ -3,10 +3,14 @@ import styled from "styled-components";
 
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 
-const StyledProfilePicture = styled.div`
+const StyledProfilePicture = styled.div<{
+  $flex?: { justifyContent: "center" | "flex-end" | "flex-start" | string };
+}>`
   display: flex;
   gap: 1.2rem;
   align-items: center;
+  justify-content: ${({ $flex }) =>
+    $flex && $flex.justifyContent ? $flex.justifyContent : "flex-start"};
   font-weight: 500;
   font-size: 1.4rem;
   color: var(--color-grey-600);
@@ -14,8 +18,6 @@ const StyledProfilePicture = styled.div`
 
 const Avatar = styled.img`
   display: block;
-  height: 3.6rem;
-  width: 3.6rem;
   aspect-ratio: 1;
   object-fit: cover;
   object-position: center;
@@ -23,19 +25,27 @@ const Avatar = styled.img`
   outline: 2px solid var(--color-grey-100);
 `;
 
-const ProfilePicture: FC<{ imgSrc?: string; textName?: string }> = ({
-  imgSrc,
-  textName,
-}) => {
+const ProfilePicture: FC<{
+  flex?: { justifyContent: "center" | "flex-end" | "flex-start" | string };
+  imgSize?: { height: number; width: number };
+  imgSrc?: string;
+  textName?: string;
+}> = ({ flex, imgSize = { height: 40, width: 40 }, imgSrc, textName }) => {
   return (
-    <StyledProfilePicture>
+    <StyledProfilePicture $flex={flex}>
       {imgSrc ? (
         <Avatar
           alt={textName ? `Profile picture of ${textName}` : "Profile Picture"}
-          src="default-user.jpg"
+          src={imgSrc}
+          height={imgSize.height}
+          width={imgSize.width}
         />
       ) : (
-        <UserCircleIcon fill="var(--color-zinc-300)" height={36} width={36} />
+        <UserCircleIcon
+          fill="var(--color-zinc-300)"
+          height={imgSize.height}
+          width={imgSize.width}
+        />
       )}
 
       {textName && <span>{textName}</span>}

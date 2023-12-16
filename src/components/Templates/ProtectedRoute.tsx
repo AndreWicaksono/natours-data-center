@@ -1,8 +1,15 @@
 import { FC, ReactNode, useEffect } from "react";
-import { useNavigate } from "@tanstack/react-router";
+
+import { useQueryClient } from "@tanstack/react-query";
+import { Navigate } from "@tanstack/react-router";
 import styled from "styled-components";
 
 import Spinner from "src/components/Atoms/Spinner";
+
+import { cookieKey } from "src/Global/Constants";
+import { useAuthContext } from "src/hooks/useAuthContext";
+import useClientCookie from "src/hooks/useClientCookie";
+import { useVerifyAuth } from "src/hooks/useVerifyAuth";
 
 export const FullPage = styled.div`
   height: 100vh;
@@ -13,21 +20,32 @@ export const FullPage = styled.div`
 `;
 
 const ProtectedRoute: FC<{ children: ReactNode }> = ({ children }) => {
-  const navigate = useNavigate();
-
-  const isLoading = false;
-  const isAuthenticated = false;
-
   // 1. Load the authenticated user
+  const { setAuthContext } = useAuthContext();
+  const { getCookie } = useClientCookie();
+  const queryClient = useQueryClient();
+  const { data, isLoading, isSuccess } = useVerifyAuth();
 
-  // 2. If there is NO authenticated user, redirect to the /login
-  useEffect(
-    function () {
-      if (!isAuthenticated && !isLoading)
-        navigate({ to: "/login", replace: true });
-    },
-    [isAuthenticated, isLoading, navigate]
-  );
+  const cookieAuth = getCookie(cookieKey) ?? "";
+
+  useEffect(() => {
+    if (isSuccess) {
+      setAuthContext(data.authorizedFor);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess]);
+
+  if (!cookieAuth) {
+    queryClient.clear();
+
+    return <Navigate replace to="/login" />;
+  }
+
+  // 2. If cookie exist but there is no authenticated user, then redirect to the /login
+  if (!data.isAuthenticated && !isLoading) {
+    return <Navigate replace to="/login" />;
+  }
 
   // 3. While loading, show a spinner
   if (isLoading)
@@ -37,8 +55,8 @@ const ProtectedRoute: FC<{ children: ReactNode }> = ({ children }) => {
       </FullPage>
     );
 
-  // 4. If there IS a user, render the app
-  if (isAuthenticated) return children;
+  // 4. If there is a user, then render the app
+  if (data.isAuthenticated) return children;
 };
 
 export default ProtectedRoute;

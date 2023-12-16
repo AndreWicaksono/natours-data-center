@@ -1,0 +1,8 @@
+# Ignore artifacts:
+build
+
+# Ignore installed node modules
+**/node_modules
+
+# Ignore generated GraphQL TypeScript
+**/src/gql
