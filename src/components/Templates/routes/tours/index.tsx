@@ -31,6 +31,7 @@ import { LayoutRow } from "src/Global/Styles.css";
 import {
   OrderByDirection,
   Query,
+  ToursCollectionQuery,
   ToursEdge,
   ToursFilter,
   ToursOrderBy,
@@ -147,7 +148,8 @@ const TemplatePageTours: FC = () => {
         <Heading as="h1">All tours</Heading>
 
         <TableToursDataViewOperations
-          onButtonSelectionSelect={(value) =>
+          onButtonSelectionSelect={(value) => {
+            setPage(1);
             setQueryVariables((prevState) => {
               const newState = { ...prevState };
 
@@ -168,8 +170,8 @@ const TemplatePageTours: FC = () => {
                 },
                 first: 10,
               };
-            })
-          }
+            });
+          }}
           onDropdownSelectChange={(e) => {
             const orderBy = e.target.value.split("-")[0];
             const orderDirection = e.target.value.split("-")[1];
@@ -290,8 +292,8 @@ const TemplatePageTours: FC = () => {
 
             setPage((prevState) => prevState - 1);
           }}
-          onSuccessUpdateRow={(data) =>
-            handleCacheUpdateOnSuccessUpdateTour(data, queryKeyDependencies)
+          onSuccessUpdateRow={(data, fieldsChanged) =>
+            handleCacheUpdateOnSuccessUpdateTour(data, fieldsChanged)
           }
           resetViewPosition={{
             behavior: resetViewPositionBehavior,
@@ -316,11 +318,7 @@ const useTourMutationCacheHandler = (): {
   ) => void;
   handleCacheUpdateOnSuccessUpdateTour: (
     data: UpdateToursCollectionMutation,
-    queryKeyDependencies: {
-      filter: Tours_QueryVariables_State_Object["filter"];
-      orderBy: Tours_QueryVariables_State_Object["orderBy"];
-      page: number;
-    }
+    fieldsChanged: string[]
   ) => void;
 } => {
   const queryClient = useQueryClient();
@@ -455,35 +453,59 @@ const useTourMutationCacheHandler = (): {
 
   const handleCacheUpdateOnSuccessUpdateTour = (
     data: UpdateToursCollectionMutation,
-    queryKeyDependencies: {
-      filter: Tours_QueryVariables_State_Object["filter"];
-      orderBy: Tours_QueryVariables_State_Object["orderBy"];
-      page: number;
-    }
+    fieldsChanged: string[]
   ) => {
-    {
-      queryClient.setQueryData(
-        ["tours", queryKeyDependencies],
-        (oldData: Query) => {
+    queryClient.setQueriesData<ToursCollectionQuery>(
+      { predicate: (query) => query.queryKey.includes("tours") },
+      (oldData): ToursCollectionQuery => {
+        if (!oldData) {
           return {
             toursCollection: {
-              edges: oldData.toursCollection?.edges.map((item) => {
-                if (item.node.id === data.updatetoursCollection.records[0].id) {
-                  return {
-                    node: {
-                      ...item,
-                      ...data.updatetoursCollection.records[0],
-                    },
-                  };
-                }
-
-                return item;
-              }),
-              pageInfo: oldData.toursCollection?.pageInfo,
+              edges: [],
+              pageInfo: {
+                hasNextPage: false,
+                hasPreviousPage: false,
+                endCursor: null,
+                startCursor: null,
+              },
+              __typename: "toursConnection",
             },
           };
         }
-      );
+
+        return {
+          toursCollection: {
+            edges: (oldData?.toursCollection?.edges ?? []).map((item) => {
+              if (item.node.id === data.updatetoursCollection.records[0].id) {
+                return {
+                  cursor: item.cursor,
+                  node: {
+                    ...item,
+                    ...data.updatetoursCollection.records[0],
+                  },
+                };
+              }
+
+              return item;
+            }),
+            pageInfo: {
+              hasNextPage: oldData.toursCollection?.pageInfo
+                .hasNextPage as boolean,
+              hasPreviousPage: oldData.toursCollection?.pageInfo
+                .hasPreviousPage as boolean,
+              endCursor: oldData.toursCollection?.pageInfo.endCursor,
+              startCursor: oldData.toursCollection?.pageInfo.startCursor,
+            },
+          },
+        };
+      }
+    );
+
+    if (fieldsChanged.includes("publish")) {
+      queryClient.removeQueries({
+        queryKey: ["tours"],
+        type: "all",
+      });
     }
   };
 
