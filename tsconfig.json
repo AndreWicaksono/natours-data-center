@@ -32,6 +32,6 @@
     /* Vite.js */
     "types": ["vite/client", "node"]
   },
-  "include": ["src", "codegen.ts", "vitest/__tests__/"],
+  "include": ["src", "vitest/__tests__/"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

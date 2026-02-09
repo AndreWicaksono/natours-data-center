@@ -97,7 +97,7 @@ export const requestToursCollection = async (
     queryVariables,
     {
       apiKey: import.meta.env.VITE_KEY_PUBLIC,
-      authorization: `Bearer ${token}` ?? "",
+      authorization: token ? `Bearer ${token}` : "",
       "Content-Type": "application/json",
     }
   );
@@ -123,7 +123,7 @@ export const requestToursCollectionByUsedSlug = async (
     },
     {
       apiKey: import.meta.env.VITE_KEY_PUBLIC,
-      authorization: `Bearer ${token}` ?? "",
+      authorization: token ? `Bearer ${token}` : "",
       "Content-Type": "application/json",
     }
   );
