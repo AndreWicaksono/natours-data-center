@@ -135,7 +135,7 @@ export const requestCreateTour = async ({
     },
     {
       apiKey: import.meta.env.VITE_KEY_PUBLIC,
-      authorization: `Bearer ${token}` ?? "",
+      authorization: token ? `Bearer ${token}` : "",
       "Content-Type": "application/json",
     }
   );
@@ -164,7 +164,7 @@ export const requestDeleteTour = async ({
     },
     {
       apiKey: import.meta.env.VITE_KEY_PUBLIC,
-      authorization: `Bearer ${token}` ?? "",
+      authorization: token ? `Bearer ${token}` : "",
       "Content-Type": "application/json",
     }
   );
@@ -244,7 +244,7 @@ export const requestUpdateTour = async ({
     },
     {
       apiKey: import.meta.env.VITE_KEY_PUBLIC,
-      authorization: `Bearer ${token}` ?? "",
+      authorization: token ? `Bearer ${token}` : "",
       "Content-Type": "application/json",
     }
   );

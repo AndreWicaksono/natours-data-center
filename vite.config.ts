@@ -51,5 +51,8 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0",
       port: mode === "development" ? 5173 : 4173,
     },
+    worker: {
+      format: "es", // Use ES modules in workers
+    },
   };
 });

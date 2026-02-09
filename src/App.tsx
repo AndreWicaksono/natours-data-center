@@ -7,7 +7,13 @@ import { AuthContextProvider } from "src/context/AuthContext";
 import CSSGlobal from "src/Global/Styles.css";
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { staleTime: 60 * 60 * 1000 } },
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 60 * 1000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
 });
 
 const App: FC<{ children: ReactNode }> = ({ children }) => {
