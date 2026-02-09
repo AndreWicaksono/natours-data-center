@@ -871,7 +871,11 @@ const FormTour: FC<
           <ToggleSwitch
             defaultChecked={defaultInputValue?.publish}
             height={20}
-            id={`toggle-publish-${defaultInputValue?.name}` ?? `toggle-publish`}
+            id={
+              defaultInputValue?.name
+                ? `toggle-publish-${defaultInputValue.name}`
+                : `toggle-publish`
+            }
             name="publish"
             onChange={(e) =>
               setForm((prevState) => ({

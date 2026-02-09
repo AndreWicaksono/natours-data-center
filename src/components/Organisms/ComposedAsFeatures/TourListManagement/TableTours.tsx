@@ -121,73 +121,83 @@ const TableTours: FC<{
 
             {isSuccess && !isError && !isLoading && (
               <>
-                {data?.toursCollection?.edges?.map((tour) => (
-                  <TableRow
-                    formEdit={
-                      <FormTour
-                        defaultInputValue={{
-                          name: tour.node.name ?? "",
-                          slug: tour.node.slug ?? "",
-                          availability: tour.node.availability ?? 0,
-                          capacity: tour.node.capacity ?? 0,
-                          city: tour.node.city ?? "",
-                          description: tour.node.description ?? "",
-                          price: tour.node.price ?? 0,
-                          photos: tour.node.photos ?? [],
-                          publish: tour.node.is_published ?? false,
-                        }}
-                        itemID={tour.node.id}
-                        mode="edit"
-                        onSuccessUpdate={onSuccessUpdateRow}
-                        type="modal"
-                      />
-                    }
-                    id={`row-tour-${tour.node.name}`}
-                    itemID={tour.node.id}
-                    key={`row-tour-${tour.node.name}`}
-                    onDelete={{
-                      elementConfirmDialog: (
-                        <p>
-                          Are you sure want to delete <b>{tour.node.name}</b>
-                        </p>
-                      ),
-                      handler: () =>
-                        onDeleteRow.handler(
-                          tour.node.id,
-                          tour.node.slug ?? "",
-                          tour.node.photos ?? []
-                        ),
-                      isLoading: onDeleteRow.isLoading,
-                    }}
-                    row={{ cssOption: { overflowX: "hidden" } }}
-                  >
-                    {tour.node.photos && tour.node.photos.length > 0 ? (
-                      <ImgThumbnail
-                        src={
-                          `${
-                            import.meta.env.VITE_URL_SERVER
-                          }/storage/v1/object/public/${
-                            tour.node.photos[0].location
-                          }` ?? ""
-                        }
-                      />
-                    ) : (
-                      <ImgNoThumbnail>
-                        <PhotoIcon
-                          height={24}
-                          width={24}
-                          color="var(--color-grey-200)"
+                {data?.toursCollection?.edges?.map((tour) => {
+                  const parsedPhotos: { id: string; location: string }[] = (
+                    tour.node.photos ?? []
+                  )
+                    .map((photoString) => {
+                      try {
+                        return photoString ? JSON.parse(photoString) : null;
+                      } catch (e) {
+                        return null;
+                      }
+                    })
+                    .filter((p): p is { id: string; location: string } => !!p);
+
+                  return (
+                    <TableRow
+                      formEdit={
+                        <FormTour
+                          defaultInputValue={{
+                            name: tour.node.name ?? "",
+                            slug: tour.node.slug ?? "",
+                            availability: tour.node.availability ?? 0,
+                            capacity: tour.node.capacity ?? 0,
+                            city: tour.node.city ?? "",
+                            description: tour.node.description ?? "",
+                            price: tour.node.price ?? 0,
+                            photos: parsedPhotos,
+                            publish: tour.node.is_published ?? false,
+                          }}
+                          itemID={tour.node.id}
+                          mode="edit"
+                          onSuccessUpdate={onSuccessUpdateRow}
+                          type="modal"
                         />
-                      </ImgNoThumbnail>
-                    )}
-                    <Label>{tour.node.name}</Label>
-                    <div>{tour.node.city}</div>
-                    <LabelPrice>
-                      {formatRupiah(tour.node.price ?? 0)}
-                    </LabelPrice>
-                    <LabelDiscount>{tour.node.availability}</LabelDiscount>
-                  </TableRow>
-                ))}
+                      }
+                      id={`row-tour-${tour.node.name}`}
+                      itemID={tour.node.id}
+                      key={`row-tour-${tour.node.name}`}
+                      onDelete={{
+                        elementConfirmDialog: (
+                          <p>
+                            Are you sure want to delete <b>{tour.node.name}</b>
+                          </p>
+                        ),
+                        handler: () =>
+                          onDeleteRow.handler(
+                            tour.node.id,
+                            tour.node.slug ?? "",
+                            parsedPhotos
+                          ),
+                        isLoading: onDeleteRow.isLoading,
+                      }}
+                      row={{ cssOption: { overflowX: "hidden" } }}
+                    >
+                      {parsedPhotos.length > 0 ? (
+                        <ImgThumbnail
+                          src={`${import.meta.env.VITE_URL_SERVER}/storage/v1/object/public/${
+                            parsedPhotos[0].location
+                          }`}
+                        />
+                      ) : (
+                        <ImgNoThumbnail>
+                          <PhotoIcon
+                            height={24}
+                            width={24}
+                            color="var(--color-grey-200)"
+                          />
+                        </ImgNoThumbnail>
+                      )}
+                      <Label>{tour.node.name}</Label>
+                      <div>{tour.node.city}</div>
+                      <LabelPrice>
+                        {formatRupiah(tour.node.price ?? 0)}
+                      </LabelPrice>
+                      <LabelDiscount>{tour.node.availability}</LabelDiscount>
+                    </TableRow>
+                  );
+                })}
               </>
             )}
 
