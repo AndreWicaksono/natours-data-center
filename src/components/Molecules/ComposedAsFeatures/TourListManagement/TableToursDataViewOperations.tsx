@@ -113,12 +113,10 @@ const TableToursDataViewOperations: FC<{
           }}
           options={optionsPublishedStatus}
           value={(() => {
-            if ("filter" in queryVariables) {
-              if (queryVariables.filter?.is_published?.eq === true) {
-                return "published";
-              } else {
-                return "draft";
-              }
+            if (queryVariables?.filter?.is_published?.eq === true) {
+              return "published";
+            } else if (queryVariables?.filter?.is_published?.eq === false) {
+              return "draft";
             } else {
               return "all";
             }
