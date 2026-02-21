@@ -23,7 +23,7 @@ const FloatingHeading = styled(Heading)`
 
   position: relative;
   right: -22.5%;
-  bottom: 1.4rem;
+  bottom: 0.8rem;
 
   white-space: nowrap;
 `;

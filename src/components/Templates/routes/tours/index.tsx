@@ -4,6 +4,7 @@ import {
   RefObject,
   SetStateAction,
   useRef,
+  useEffect,
   useState,
 } from "react";
 
@@ -14,7 +15,9 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useSearch, useNavigate } from "@tanstack/react-router";
 import toast from "react-hot-toast";
+import styled from "styled-components";
 
 import Button from "src/components/Atoms/Button";
 import Heading from "src/components/Atoms/Heading";
@@ -42,6 +45,100 @@ import { useSmoothScrollIntoViewBehavior } from "src/hooks/useSmoothScrollIntoVi
 import { arraySliceIntoChunks } from "src/utils/Array";
 import { clearGraphQLPaginationObjectKeys } from "src/utils/Object";
 
+// ─── Mobile-Specific Styles ───────────────────────────────────────────────────
+
+const PageHeader = styled(LayoutRow)`
+  /* Override default LayoutRow behavior for better mobile UX */
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 1.6rem;
+  }
+
+  @media (max-width: 480px) {
+    gap: 1.4rem;
+  }
+`;
+
+const DesktopCreateButton = styled.div`
+  display: block;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const FloatingCreateButton = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    bottom: 2.4rem;
+    right: 2.4rem;
+    z-index: 999;
+
+    button {
+      width: 5.6rem;
+      height: 5.6rem;
+      border-radius: 50%;
+      padding: 0;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover:not(:disabled) {
+        transform: scale(1.1);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.95);
+      }
+
+      svg {
+        width: 2.4rem;
+        height: 2.4rem;
+      }
+
+      span {
+        display: none;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    bottom: 2rem;
+    right: 2rem;
+
+    button {
+      width: 5.2rem;
+      height: 5.2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button {
+      transition: box-shadow 0.2s ease;
+
+      &:hover:not(:disabled) {
+        transform: none;
+      }
+
+      &:active:not(:disabled) {
+        transform: none;
+      }
+    }
+  }
+`;
+
+// ─── Type Definitions ─────────────────────────────────────────────────────────
+
 type Tours_QueryVariables_State_Object = {
   filter?: ToursFilter;
   orderBy?: ToursOrderBy;
@@ -51,7 +148,11 @@ type Tours_QueryVariables_State_Object = {
   before?: string;
 };
 
+// ─── Main Component ───────────────────────────────────────────────────────────
+
 const TemplatePageTours: FC = () => {
+  const searchParams = useSearch({ strict: false });
+  const searchQuery = (searchParams as { search?: string }).search;
   const [page, setPage] = useState<number>(1);
   const [queryVariables, setQueryVariables] =
     useState<Tours_QueryVariables_State_Object>({
@@ -71,6 +172,35 @@ const TemplatePageTours: FC = () => {
 
   const refResetViewPosition: RefObject<HTMLDivElement> = useRef(null);
 
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setPage(1);
+    setQueryVariables((prev) => {
+      const newVars = { ...prev };
+      clearGraphQLPaginationObjectKeys(newVars);
+      newVars.first = 10;
+
+      const publishedFilter =
+        prev.filter?.is_published !== undefined
+          ? { is_published: prev.filter.is_published }
+          : {};
+
+      if (searchQuery) {
+        newVars.filter = {
+          ...publishedFilter,
+          or: [
+            { name: { ilike: `%${searchQuery}%` } },
+            { city: { ilike: `%${searchQuery}%` } },
+          ],
+        };
+      } else {
+        newVars.filter =
+          Object.keys(publishedFilter).length > 0 ? publishedFilter : undefined;
+      }
+      return newVars;
+    });
+  }, [searchQuery]);
   const { getCookie } = useClientCookie();
 
   const { isPending: isPendingOnDeleteTour, mutate: mutateDeleteTour } =
@@ -88,7 +218,6 @@ const TemplatePageTours: FC = () => {
         token: string;
       }) => {
         if (photos.length > 0) {
-          // If there are photos, delete them first
           await Promise.all(
             photos.map(async (photo) => {
               return await requestPhotoDelete({
@@ -128,7 +257,6 @@ const TemplatePageTours: FC = () => {
     gcTime: 60 * 60 * 1000,
     queryFn: async () =>
       await requestToursCollection(queryVariables, getCookie(cookieKey) ?? ""),
-    // Using custom dependencies for queryKey to get consistent UI behavior after row deletion (always pick 1 item from next page & append into last sequence of current page)
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: ["tours", queryKeyDependencies],
     staleTime: 60 * 60 * 1000,
@@ -142,34 +270,60 @@ const TemplatePageTours: FC = () => {
     handleCacheUpdateOnSuccessUpdateTour,
   } = useTourMutationCacheHandler();
 
+  const handleClearSearch = () => {
+    navigate({ to: "/tours" });
+  };
+
   return (
     <>
-      <LayoutRow $type="horizontal" ref={refResetViewPosition}>
-        <Heading as="h1">All tours</Heading>
+      <PageHeader $type="horizontal" ref={refResetViewPosition}>
+        {/* Desktop: Side-by-side layout */}
+        {searchQuery ? (
+          <LayoutRow
+            $type="horizontal"
+            style={{
+              gap: "1.6rem",
+              alignItems: "start",
+              flexDirection: searchQuery ? "column" : "row",
+            }}
+          >
+            <Heading as="h1">Search results for: "{searchQuery}"</Heading>
+            <Button
+              $size="small"
+              $variation="secondary"
+              onClick={handleClearSearch}
+            >
+              Clear
+            </Button>
+          </LayoutRow>
+        ) : (
+          <Heading as="h1">All tours</Heading>
+        )}
 
         <TableToursDataViewOperations
           onButtonSelectionSelect={(value) => {
             setPage(1);
             setQueryVariables((prevState) => {
               const newState = { ...prevState };
-
               clearGraphQLPaginationObjectKeys(newState);
 
-              if (value === "all" && newState.filter) {
-                delete newState.filter;
+              const searchFilter = newState.filter?.or
+                ? { or: newState.filter.or }
+                : {};
 
-                newState.first = 10;
-
-                return newState;
-              }
-
-              return {
-                ...newState,
-                filter: {
+              if (value === "all") {
+                newState.filter =
+                  Object.keys(searchFilter).length > 0
+                    ? searchFilter
+                    : undefined;
+              } else {
+                newState.filter = {
+                  ...searchFilter,
                   is_published: { eq: value === "published" },
-                },
-                first: 10,
-              };
+                };
+              }
+              newState.first = 10;
+              return newState;
             });
           }}
           onDropdownSelectChange={(e) => {
@@ -193,44 +347,52 @@ const TemplatePageTours: FC = () => {
           }}
           queryVariables={queryVariables}
         />
-      </LayoutRow>
+      </PageHeader>
 
       <LayoutRow $type="vertical">
+        <div>
+          {/* Desktop Create Button - in table header */}
+          <DesktopCreateButton>
+            <Modal key="column-tour-photo">
+              <Modal.Open opens="tour-add-form">
+                <Button
+                  $flex={{
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  $size="small"
+                  disabled={isLoading}
+                >
+                  <PlusIcon height={16} width={16} />
+                  <span>Create a new tour</span>
+                </Button>
+              </Modal.Open>
+
+              <Modal.Window name="tour-add-form">
+                <FormTour
+                  mode="add"
+                  onSuccessCreate={(data) =>
+                    handleCacheUpdateOnSuccessCreateTour(
+                      data,
+                      () => setPage(1),
+                      {
+                        setState: setQueryVariables,
+                        state: queryVariables,
+                      }
+                    )
+                  }
+                  type="modal"
+                />
+              </Modal.Window>
+            </Modal>
+          </DesktopCreateButton>
+        </div>
+
         <TableTours
           columns={[
             {
               id: "column-tour-photo",
-              label: (
-                <Modal key="column-tour-photo">
-                  <Modal.Open opens="tour-add-form">
-                    <Button
-                      $flex={{ alignItems: "center", justifyContent: "center" }}
-                      $size="small"
-                      disabled={isLoading}
-                    >
-                      <PlusIcon height={16} width={16} />
-                      <span>Create</span>
-                    </Button>
-                  </Modal.Open>
-
-                  <Modal.Window name="tour-add-form">
-                    <FormTour
-                      mode="add"
-                      onSuccessCreate={(data) =>
-                        handleCacheUpdateOnSuccessCreateTour(
-                          data,
-                          () => setPage(1),
-                          {
-                            setState: setQueryVariables,
-                            state: queryVariables,
-                          }
-                        )
-                      }
-                      type="modal"
-                    />
-                  </Modal.Window>
-                </Modal>
-              ),
+              label: <>&nbsp;</>,
             },
             { id: "column-tour-name", label: "Tour" },
             { id: "column-tour-city", label: "City" },
@@ -276,7 +438,6 @@ const TemplatePageTours: FC = () => {
               if (queryKeyDependencies.page === 2) {
                 clearGraphQLPaginationObjectKeys(newState);
 
-                // Return initial query variables to sync with updated cache condition
                 return { ...newState, first: 10 };
               }
 
@@ -303,9 +464,40 @@ const TemplatePageTours: FC = () => {
           rows={{ data: data ?? null, isError, isLoading, isSuccess }}
         />
       </LayoutRow>
+
+      {/* Mobile: Floating Action Button */}
+      <FloatingCreateButton>
+        <Modal>
+          <Modal.Open opens="tour-add-form-mobile">
+            <Button
+              $flex={{ alignItems: "center", justifyContent: "center" }}
+              disabled={isLoading}
+              aria-label="Create new tour"
+            >
+              <PlusIcon />
+              <span>Create</span>
+            </Button>
+          </Modal.Open>
+
+          <Modal.Window name="tour-add-form-mobile">
+            <FormTour
+              mode="add"
+              onSuccessCreate={(data) =>
+                handleCacheUpdateOnSuccessCreateTour(data, () => setPage(1), {
+                  setState: setQueryVariables,
+                  state: queryVariables,
+                })
+              }
+              type="modal"
+            />
+          </Modal.Window>
+        </Modal>
+      </FloatingCreateButton>
     </>
   );
 };
+
+// ─── Cache Handler Hook ───────────────────────────────────────────────────────
 
 const useTourMutationCacheHandler = (): {
   handleCacheUpdateOnSuccessCreateTour: (
@@ -331,7 +523,6 @@ const useTourMutationCacheHandler = (): {
       state: Tours_QueryVariables_State_Object;
     }
   ) => {
-    // If there is filter or sort condition is not default value applied then set back to default value
     if (
       !queryVariables.state.orderBy?.created_at ||
       queryVariables.state.orderBy?.created_at !==
@@ -363,7 +554,6 @@ const useTourMutationCacheHandler = (): {
     const queryData = queryClient.getQueriesData<Query>({
       queryKey: ["tours"],
       predicate: (query) => {
-        // Only return data of default sort option
         return (
           "created_at" in
           (
@@ -382,7 +572,6 @@ const useTourMutationCacheHandler = (): {
             .hasNextPage
         : true;
 
-    // START: Transformation of the data structure before it is given to the new state
     const mergedOldEdges: Array<ToursEdge> = [
       ...(data?.toursCollection?.edges ?? []),
       ...queryData
@@ -390,14 +579,11 @@ const useTourMutationCacheHandler = (): {
         .flat(),
     ];
 
-    // Clean up temporary cache
     queryClient.removeQueries({
       queryKey: ["tempTourAfterInsertion"],
     });
 
     if (!isAllPagesFetched) {
-      // If the data is not from all pages, it means there is data on the next page & mergedOldEdges.length must be a multiple of 10.
-      // Example: If we have 26 tours (3 pages). The result of old edges are 20 items (let say we already visit 2 pages), it will be added with 1 item (created), then the result of mergedOldData.length will be 21 and should be removed from the end of array.
       mergedOldEdges.pop();
     }
 
@@ -405,9 +591,7 @@ const useTourMutationCacheHandler = (): {
       mergedOldEdges,
       10
     ) as ToursEdge[][];
-    // END: Transformation of the data structure before it is given to the new state
 
-    // Cache update for all fetched page data (default sort only)
     chunkedEdges.forEach((edgeOfPage, indexEdgeOfPage) => {
       const hasNextPage: boolean = (() => {
         if (indexEdgeOfPage === chunkedEdges.length - 1) {
