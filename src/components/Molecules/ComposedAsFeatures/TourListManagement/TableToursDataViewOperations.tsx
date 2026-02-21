@@ -1,45 +1,78 @@
 import { ChangeEventHandler, FC } from "react";
 
+import {
+  FunnelIcon,
+  Bars3BottomLeftIcon,
+  CalendarDaysIcon,
+  BarsArrowDownIcon,
+  BarsArrowUpIcon,
+  CurrencyDollarIcon,
+  ChartBarIcon,
+  UsersIcon,
+  MapPinIcon,
+} from "@heroicons/react/24/outline";
+
 import ButtonSelection from "src/components/Molecules/ButtonSelection";
 import Select from "src/components/Molecules/Select";
-import TableDataViewOperations from "src/components/Molecules/TableDataViewOperations";
+import TableDataViewOperations, {
+  FilterGroup,
+  FilterLabel,
+  Divider,
+} from "src/components/Molecules/TableDataViewOperations";
 
 import { ToursCollectionQueryVariables } from "src/gql/graphql";
 
-const optionsOrderBy: Array<{ label: string; value: string }> = [
+// ─── Sort Options with Emojis ─────────────────────────────────────────────────
+
+const optionsOrderBy = [
   {
-    label: "Sort by Date created (Z-A)",
+    label: "Date created (newest)",
     value: "created_at-DescNullsLast",
+    icon: CalendarDaysIcon,
   },
   {
-    label: "Sort by Date created (A-Z)",
+    label: "Date created (oldest)",
     value: "created_at-AscNullsLast",
+    icon: CalendarDaysIcon,
   },
   {
-    label: "Sort by name (A-Z)",
+    label: "Name (A → Z)",
     value: "name-AscNullsLast",
+    icon: BarsArrowDownIcon,
   },
   {
-    label: "Sort by name (Z-A)",
+    label: "Name (Z → A)",
     value: "name-DescNullsLast",
+    icon: BarsArrowUpIcon,
   },
   {
-    label: "Sort by price (low first)",
+    label: "Price (low → high)",
     value: "price-AscNullsFirst",
+    icon: CurrencyDollarIcon,
   },
   {
-    label: "Sort by price (high first)",
+    label: "Price (high → low)",
     value: "price-DescNullsLast",
+    icon: CurrencyDollarIcon,
   },
   {
-    label: "Sort by availability (low first)",
+    label: "Availability (low → high)",
     value: "availability-AscNullsFirst",
+    icon: ChartBarIcon,
   },
   {
-    label: "Sort by availability (high first)",
-    value: "availability-DescNullsLast",
+    label: "Capacity (low → high)",
+    value: "capacity-AscNullsFirst",
+    icon: UsersIcon,
+  },
+  {
+    label: "City (A → Z)",
+    value: "city-AscNullsFirst",
+    icon: MapPinIcon,
   },
 ];
+
+// ─── Filter Options ───────────────────────────────────────────────────────────
 
 const optionsPublishedStatus: Array<{ label: string; value: string }> = [
   {
@@ -56,6 +89,8 @@ const optionsPublishedStatus: Array<{ label: string; value: string }> = [
   },
 ];
 
+// ─── Main Component ───────────────────────────────────────────────────────────
+
 const TableToursDataViewOperations: FC<{
   onButtonSelectionSelect?: (value: string) => void;
   onDropdownSelectChange?: ChangeEventHandler<HTMLSelectElement>;
@@ -63,36 +98,54 @@ const TableToursDataViewOperations: FC<{
 }> = ({ onButtonSelectionSelect, onDropdownSelectChange, queryVariables }) => {
   return (
     <TableDataViewOperations>
-      <ButtonSelection
-        onSelect={(value) => {
-          if (onButtonSelectionSelect) {
-            onButtonSelectionSelect(value);
-          }
-        }}
-        options={optionsPublishedStatus}
-        value={(() => {
-          if ("filter" in queryVariables) {
-            if (queryVariables.filter?.is_published?.eq === true) {
-              return "published";
-            } else {
-              return "draft";
+      {/* Filter Group */}
+      <FilterGroup>
+        <FilterLabel>
+          <FunnelIcon />
+          Filter
+        </FilterLabel>
+
+        <ButtonSelection
+          onSelect={(value) => {
+            if (onButtonSelectionSelect) {
+              onButtonSelectionSelect(value);
             }
-          } else {
-            return "all";
-          }
-        })()}
-      />
+          }}
+          options={optionsPublishedStatus}
+          value={(() => {
+            if ("filter" in queryVariables) {
+              if (queryVariables.filter?.is_published?.eq === true) {
+                return "published";
+              } else {
+                return "draft";
+              }
+            } else {
+              return "all";
+            }
+          })()}
+        />
+      </FilterGroup>
 
-      <Select
-        name="selectSort"
-        onChange={onDropdownSelectChange}
-        options={optionsOrderBy}
-        value={(() => {
-          const orderBy = Object.entries(queryVariables.orderBy as object)[0];
+      {/* Divider */}
+      <Divider />
 
-          return orderBy.join("-");
-        })()}
-      />
+      {/* Sort Group */}
+      <FilterGroup>
+        <FilterLabel>
+          <Bars3BottomLeftIcon />
+          Sort
+        </FilterLabel>
+
+        <Select
+          name="selectSort"
+          onChange={onDropdownSelectChange}
+          options={optionsOrderBy}
+          value={(() => {
+            const orderBy = Object.entries(queryVariables.orderBy as object)[0];
+            return orderBy.join("-");
+          })()}
+        />
+      </FilterGroup>
     </TableDataViewOperations>
   );
 };
