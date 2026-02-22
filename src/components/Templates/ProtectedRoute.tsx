@@ -12,7 +12,7 @@ import useClientCookie from "src/hooks/useClientCookie";
 import { useVerifyAuth } from "src/hooks/useVerifyAuth";
 
 export const FullPage = styled.div`
-  height: 100vh;
+  height: 100dvh;
   background-color: var(--color-grey-50);
   display: flex;
   align-items: center;

@@ -43,7 +43,7 @@ const GlassOverlay = styled.div`
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
   z-index: 1000;
 
   /* Glassmorphism effect */
@@ -75,7 +75,7 @@ const GlassModal = styled.div`
 
   width: 90%;
   max-width: 80rem;
-  max-height: 90vh;
+  max-height: 90dvh;
 
   /* Glassmorphism effect */
   background: rgba(255, 255, 255, 0.95);
@@ -96,7 +96,7 @@ const GlassModal = styled.div`
   /* Tablet */
   @media (max-width: 1024px) {
     max-width: 70rem;
-    max-height: 92vh;
+    max-height: 92dvh;
   }
 
   /* Mobile: Bottom sheet with glass effect */
@@ -109,7 +109,7 @@ const GlassModal = styled.div`
 
     width: 100%;
     max-width: 100%;
-    max-height: 95vh;
+    max-height: 95dvh;
 
     border-radius: 2rem 2rem 0 0;
     border-bottom: none;
@@ -121,7 +121,7 @@ const GlassModal = styled.div`
   }
 
   @media (max-width: 480px) {
-    max-height: 98vh;
+    max-height: 98dvh;
     border-radius: 1.6rem 1.6rem 0 0;
   }
 
@@ -265,7 +265,7 @@ const CloseButton = styled.button`
 
 const ModalContent = styled.div<{ $maxHeight?: string }>`
   padding: 2.4rem 3.2rem;
-  max-height: ${(p) => p.$maxHeight || "calc(90vh - 12rem)"};
+  max-height: ${(p) => p.$maxHeight || "calc(90dvh - 12rem)"};
   overflow-y: auto;
   overflow-x: hidden;
 
@@ -294,12 +294,12 @@ const ModalContent = styled.div<{ $maxHeight?: string }>`
 
   @media (max-width: 768px) {
     padding: 2rem 2.4rem;
-    max-height: calc(95vh - 10rem);
+    max-height: calc(95dvh - 10rem);
   }
 
   @media (max-width: 480px) {
     padding: 1.8rem 2rem;
-    max-height: calc(98vh - 9rem);
+    max-height: calc(98dvh - 9rem);
   }
 `;
 

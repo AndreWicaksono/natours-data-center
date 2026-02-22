@@ -45,6 +45,8 @@ import { useSmoothScrollIntoViewBehavior } from "src/hooks/useSmoothScrollIntoVi
 import { arraySliceIntoChunks } from "src/utils/Array";
 import { clearGraphQLPaginationObjectKeys } from "src/utils/Object";
 
+import SearchResultsHeader from "src/components/Molecules/ComposedAsFeatures/SearchResultHeader";
+
 // ─── Mobile-Specific Styles ───────────────────────────────────────────────────
 
 const PageHeader = styled(LayoutRow)`
@@ -279,23 +281,11 @@ const TemplatePageTours: FC = () => {
       <PageHeader $type="horizontal" ref={refResetViewPosition}>
         {/* Desktop: Side-by-side layout */}
         {searchQuery ? (
-          <LayoutRow
-            $type="horizontal"
-            style={{
-              gap: "1.6rem",
-              alignItems: "start",
-              flexDirection: searchQuery ? "column" : "row",
-            }}
-          >
-            <Heading as="h1">Search results for: "{searchQuery}"</Heading>
-            <Button
-              $size="small"
-              $variation="secondary"
-              onClick={handleClearSearch}
-            >
-              Clear
-            </Button>
-          </LayoutRow>
+          <SearchResultsHeader
+            searchQuery={searchQuery}
+            resultsCount={data?.toursCollection?.edges?.length || 0}
+            onClear={handleClearSearch}
+          />
         ) : (
           <Heading as="h1">All tours</Heading>
         )}
