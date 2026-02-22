@@ -626,7 +626,7 @@ const MobileTourCard: FC<{
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         title="Delete Tour"
-        maxHeight="35vh"
+        maxHeight="35dvh"
       >
         <div style={{ padding: "0 0 2rem 0" }}>
           <p

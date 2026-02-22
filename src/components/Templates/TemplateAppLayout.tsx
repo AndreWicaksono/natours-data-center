@@ -13,7 +13,7 @@ import MobileSidebar from "../Organisms/Sidebar/MobileSidebar";
 
 const StyledAppLayout = styled.div`
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   background-color: var(--color-grey-50);
 `;
 

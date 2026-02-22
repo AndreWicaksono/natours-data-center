@@ -1,3 +1,5 @@
+import { FC, useEffect, useState } from "react";
+
 import styled, { css, keyframes } from "styled-components";
 
 import {
@@ -6,10 +8,10 @@ import {
   BellIcon,
   MagnifyingGlassIcon,
   Cog6ToothIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { UserIcon } from "@heroicons/react/24/solid";
-import { useNavigate } from "@tanstack/react-router";
-import { FC, useState } from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 
 import Menus from "src/components/Molecules/Menus";
 import ProfilePicture from "src/components/Molecules/ProfilePicture";
@@ -194,10 +196,73 @@ const SearchContainer = styled.div`
   }
 `;
 
+const SearchInputWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+`;
+
+const ClearButton = styled.button`
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 2.8rem;
+  height: 2.8rem;
+
+  background: transparent;
+  border: none;
+  border-radius: 0.6rem;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 1.8rem;
+    height: 1.8rem;
+    color: var(--color-grey-500);
+    transition: color 0.2s ease;
+  }
+
+  &:hover {
+    background: var(--color-grey-200);
+
+    svg {
+      color: var(--color-grey-700);
+    }
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.9);
+  }
+
+  @media (max-width: 767px) {
+    width: 3.2rem;
+    height: 3.2rem;
+
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:active {
+      transform: translateY(-50%);
+    }
+  }
+`;
+
 const SearchInput = styled.input`
   width: 100%;
 
-  padding: 1rem 1.4rem 1rem 4.2rem;
+  padding: 1rem 4.4rem 1rem 4.2rem; /* ← Changed from 1rem 1.4rem 1rem 4.2rem */
 
   font-size: 1.4rem;
   color: var(--color-grey-800);
@@ -462,7 +527,21 @@ const DashboardHeader: FC<{
   const { authContext } = useAuthContext();
   const navigate = useNavigate();
 
-  const [searchQuery, setSearchQuery] = useState("");
+  // Read search from URL params
+  const urlSearchParams = useSearch({ strict: false }) as { search?: string };
+  const searchFromUrl = urlSearchParams?.search || "";
+
+  const [searchQuery, setSearchQuery] = useState(searchFromUrl);
+
+  // Sync with URL when route changes
+  useEffect(() => {
+    setSearchQuery(searchFromUrl);
+  }, [searchFromUrl]);
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    navigate({ to: "/tours" });
+  };
 
   const handleLogout = async (token: string): Promise<void> => {
     if (token) {
@@ -480,9 +559,7 @@ const DashboardHeader: FC<{
 
   return (
     <StyledHeader $isSidebarExpanded={isSidebarExpanded}>
-      {/* Left Section */}
       <HeaderLeft>
-        {/* Mobile Menu Toggle */}
         <MobileNavToggle
           onClick={onToggleMobileSidebar}
           aria-label="Toggle navigation menu"
@@ -490,30 +567,41 @@ const DashboardHeader: FC<{
           <Bars3Icon />
         </MobileNavToggle>
 
-        {/* Search Bar (Desktop) */}
+        {/* ─── UPDATED Search Section ─── */}
         <SearchContainer>
-          <SearchIcon />
-          <SearchInput
-            type="search"
-            placeholder="Search tours by name or city"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                navigate({
-                  to: "/tours",
-                  search: { search: searchQuery },
-                });
-              }
-            }}
-            aria-label="Search"
-          />
+          <SearchInputWrapper>
+            <SearchIcon />
+            <SearchInput
+              type="search"
+              placeholder="Search tours by name or city"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  navigate({
+                    to: "/tours",
+                    search: { search: searchQuery },
+                  });
+                }
+              }}
+              aria-label="Search"
+            />
+
+            {/* ─── NEW Clear Button ─── */}
+            {searchQuery && (
+              <ClearButton
+                onClick={handleClearSearch}
+                aria-label="Clear search"
+                type="button"
+              >
+                <XMarkIcon />
+              </ClearButton>
+            )}
+          </SearchInputWrapper>
         </SearchContainer>
       </HeaderLeft>
 
-      {/* Right Section */}
       <HeaderRight>
-        {/* Notifications */}
         <IconButton
           $hasNotification={notificationCount > 0}
           aria-label={`Notifications ${notificationCount > 0 ? `(${notificationCount})` : ""}`}
@@ -526,7 +614,6 @@ const DashboardHeader: FC<{
           )}
         </IconButton>
 
-        {/* Settings (Desktop) */}
         <IconButton
           aria-label="Settings"
           style={{ display: window.innerWidth < 768 ? "none" : "flex" }}
@@ -534,13 +621,11 @@ const DashboardHeader: FC<{
           <Cog6ToothIcon />
         </IconButton>
 
-        {/* User Info (Desktop) */}
         <UserInfo>
           <UserName>{fullName || authContext.email || "User"}</UserName>
           <UserRole>Administrator</UserRole>
         </UserInfo>
 
-        {/* Profile Dropdown Menu */}
         <Menus>
           <Menus.Menu>
             <Menus.Toggle id="btn-user" $icon={{ $height: 4.4, $width: 4.4 }}>
@@ -573,17 +658,6 @@ const DashboardHeader: FC<{
                 >
                   Account Settings
                 </Menus.Button>
-
-                {/* <Menus.Button
-                    icon={<Cog6ToothIcon height={18} width={18} />}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate({ to: "/settings" });
-                    }}
-                    disabled={false}
-                  >
-                    Preferences
-                  </Menus.Button> */}
               </MenuSection>
 
               <Menus.Divider />

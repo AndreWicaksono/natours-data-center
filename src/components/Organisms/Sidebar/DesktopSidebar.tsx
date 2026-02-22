@@ -67,7 +67,7 @@ const SidebarContainer = styled.aside`
   position: sticky;
   top: 0;
   left: 0;
-  height: 100vh;
+  height: 100dvh;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   @media (prefers-reduced-motion: reduce) {
