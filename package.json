@@ -1,7 +1,7 @@
 {
   "name": "natours-data-center",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "scripts": {
     "build": "tsc && vite build",
@@ -19,7 +19,7 @@
     "@nivo/line": "^0.99.0",
     "@tanstack/react-query": "^5.14.0",
     "@tanstack/react-query-devtools": "^5.14.0",
-    "@tanstack/react-router": "^0.0.1-beta.279",
+    "@tanstack/react-router": "^1.162.1",
     "babel-plugin-styled-components": "^2.1.4",
     "dayjs": "^1.11.10",
     "graphql": "^16.8.1",

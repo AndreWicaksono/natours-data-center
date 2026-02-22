@@ -84,7 +84,7 @@ const SidebarContainer = styled.aside<{ $isOpened: boolean }>`
 `;
 
 const SidebarContent = styled.div`
-  min-height: 100vh;
+  min-height: 100dvh;
   width: 32rem; /* 320px - slightly wider for better touch targets */
   max-width: 85vw; /* Don't take full screen on very small devices */
 

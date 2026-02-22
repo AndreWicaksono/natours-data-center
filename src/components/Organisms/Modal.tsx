@@ -44,7 +44,7 @@ const StyledModal = styled.div`
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-lg);
   padding: 3.2rem 4rem;
-  max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
   z-index: 1001;
 
@@ -53,7 +53,7 @@ const StyledModal = styled.div`
   /* Tablet */
   @media (max-width: 1024px) {
     padding: 2.8rem 3.2rem;
-    max-height: 92vh;
+    max-height: 92dvh;
     max-width: 90vw;
   }
 
@@ -67,7 +67,7 @@ const StyledModal = styled.div`
 
     width: 100%;
     max-width: 100%;
-    max-height: 95vh;
+    max-height: 95dvh;
 
     border-radius: 1.6rem 1.6rem 0 0;
     padding: 2.4rem 2rem;
@@ -78,7 +78,7 @@ const StyledModal = styled.div`
   /* Small Mobile */
   @media (max-width: 480px) {
     padding: 2rem 1.6rem;
-    max-height: 98vh;
+    max-height: 98dvh;
   }
 
   /* Smooth scrolling */
@@ -95,7 +95,7 @@ const Overlay = styled.div`
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
   background-color: var(--backdrop-color);
   backdrop-filter: blur(4px);
   z-index: 1000;
@@ -199,7 +199,7 @@ const Button = styled.button`
 export const ContainerModalContentOverflowYScroll = styled.div<{
   $height: number;
 }>`
-  height: ${({ $height }) => $height}vh;
+  height: ${({ $height }) => $height}dvh;
   overflow-y: auto;
   overflow-x: hidden;
 
@@ -228,11 +228,11 @@ export const ContainerModalContentOverflowYScroll = styled.div<{
 
   /* Mobile: Adjust height to account for bottom sheet */
   @media (max-width: 768px) {
-    height: ${({ $height }) => Math.min($height, 70)}vh;
+    height: ${({ $height }) => Math.min($height, 70)}dvh;
   }
 
   @media (max-width: 480px) {
-    height: ${({ $height }) => Math.min($height, 65)}vh;
+    height: ${({ $height }) => Math.min($height, 65)}dvh;
   }
 `;
 
