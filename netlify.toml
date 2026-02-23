@@ -1,0 +1,24 @@
+# Build settings
+[build]
+  publish = "dist"        # or "build" - build output folder
+  command = "npm run build"
+
+# SPA redirect rule
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false           # Don't override existing files
+
+# Optional: Force HTTPS
+[[redirects]]
+  from = "http://*"
+  to = "https://:splat"
+  status = 301
+  force = true
+
+# Optional: Handle trailing slashes consistently
+[[redirects]]
+  from = "/*/"
+  to = "/:splat"
+  status = 301
