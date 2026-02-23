@@ -137,7 +137,7 @@ export const FilterGroup = styled.div`
     );
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1199px) {
     flex-direction: column;
     align-items: stretch;
     padding: 1rem;
