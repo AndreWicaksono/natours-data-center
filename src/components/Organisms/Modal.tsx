@@ -50,11 +50,15 @@ const StyledModal = styled.div`
 
   animation: ${slideUp} 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+  width: 71.05rem;
+
   /* Tablet */
   @media (max-width: 1024px) {
     padding: 2.8rem 3.2rem;
     max-height: 92dvh;
     max-width: 90vw;
+
+    width: 71.05rem;
   }
 
   /* Mobile */
