@@ -29,7 +29,6 @@ export const useVerifyAuth = (): {
   /* eslint-disable @tanstack/query/exhaustive-deps */
   const { data, error, isLoading, isSuccess } = useQuery({
     enabled: !!cookieAuth,
-    gcTime: 0,
     queryFn: () => {
       if (!cookieAuth) {
         throw "Cookie is not available";
@@ -55,7 +54,6 @@ export const useVerifyAuth = (): {
     isSuccess: isSuccessOfAdditionalAuthInfo,
   } = useQuery({
     enabled: !!cookieAuth && !!staffId,
-    gcTime: 0,
     queryFn: () => {
       if (!cookieAuth) {
         throw "Cookie is not available";
@@ -95,8 +93,8 @@ export const useVerifyAuth = (): {
         isAuthenticated: true,
       },
       error: error || errorOfAdditionalAuthInfo,
-      isLoading: isLoading && isLoadingOfAdditionalAuthInfo,
-      isSuccess: isSuccess && isSuccessOfAdditionalAuthInfo,
+      isLoading: isLoading || isLoadingOfAdditionalAuthInfo,
+      isSuccess: true,
     };
   }
 
