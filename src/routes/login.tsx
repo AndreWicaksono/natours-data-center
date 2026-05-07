@@ -12,16 +12,18 @@ export const route = new FileRoute("/login").createRoute({
     /* eslint-disable react-hooks/rules-of-hooks */
     const { data, isLoading } = useVerifyAuth();
 
+    // 1. Check if authenticated first to trigger navigation immediately
+    if (data && data.isAuthenticated) {
+      return <Navigate replace to="/dashboard" />;
+    }
+
+    // 2. Show spinner while verifying (data object is always returned by your hook, so !data was always false)
     if (isLoading)
       return (
         <FullPage>
           <Spinner />
         </FullPage>
       );
-
-    if (data.isAuthenticated && !isLoading) {
-      return <Navigate replace to="/dashboard" />;
-    }
 
     return <TemplatePageLogin />;
   },
